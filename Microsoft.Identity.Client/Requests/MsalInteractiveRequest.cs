@@ -33,22 +33,19 @@ using Microsoft.Identity.Client.Cache;
 
 namespace Microsoft.Identity.Client.Requests
 {
-    internal class MsalInteractiveRequest : IMsalInteractiveRequest
+    internal class MsalInteractiveRequest : IMsalRequest
     {
         private readonly IBrowserFactory _browserFactory;
-        private readonly IRequestDispatcher _requestDispatcher;
         private readonly AuthenticationParameters _authParameters;
         private readonly CacheManager _cacheManager;
         private readonly WebRequestManager _webRequestManager;
 
         public MsalInteractiveRequest(
-            IRequestDispatcher requestDispatcher,
             WebRequestManager webRequestManager,
             CacheManager cacheManager,
             IBrowserFactory browserFactory,
             AuthenticationParameters authParameters)
         {
-            _requestDispatcher = requestDispatcher;
             _webRequestManager = webRequestManager;
             _cacheManager = cacheManager;
             _browserFactory = browserFactory;

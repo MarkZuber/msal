@@ -50,5 +50,10 @@ namespace Microsoft.Identity.Client.Requests
         public string Utid { get; }
         public bool HasAccessToken { get; }
         public bool HasRefreshToken { get; }
+
+        public static TokenResponse Create(string response)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

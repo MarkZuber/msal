@@ -26,28 +26,15 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Identity.Client.Core;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Core
 {
-    internal class Jwt
+    internal class GuidService : IGuidService
     {
-        public Jwt(string raw)
+        /// <inheritdoc />
+        public Guid NewGuid()
         {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
+            return Guid.NewGuid();
         }
-
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
     }
 }

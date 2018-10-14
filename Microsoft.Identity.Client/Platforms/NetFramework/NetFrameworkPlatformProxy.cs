@@ -26,28 +26,40 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Identity.Client.Core;
+using Microsoft.Identity.Client.Browser;
+using Microsoft.Identity.Client.Cache;
+using Microsoft.Identity.Client.Logging;
+using Microsoft.Identity.Client.Platform;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Platforms.NetFramework
 {
-    internal class Jwt
+    internal class NetFrameworkPlatformProxy : IPlatformProxy
     {
-        public Jwt(string raw)
+        private readonly ISystemUtils _systemUtils = new NetFrameworkSystemUtils();
+        private readonly IBrowserFactory _browserFactory = new NetFrameworkBrowserFactory();
+
+        /// <inheritdoc />
+        public ISystemUtils GetSystemUtils()
         {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
+            return _systemUtils;
         }
 
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
+        /// <inheritdoc />
+        public IStorageManager CreateStorageManager()
+        {
+            return new NetFrameworkStorageManager();
+        }
+
+        /// <inheritdoc />
+        public IBrowserFactory CreateBrowserFactory()
+        {
+            return _browserFactory;
+        }
+
+        /// <inheritdoc />
+        public ILogger CreateLogger(string telemetryCorrelationId)
+        {
+            return new NetFrameworkLogger(telemetryCorrelationId);
+        }
     }
 }

@@ -25,29 +25,23 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
-using Microsoft.Identity.Client.Core;
+using System.Net.Http;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Http
 {
-    internal class Jwt
+    public class HttpClientFactory : IHttpClientFactory
     {
-        public Jwt(string raw)
+        private readonly HttpClient _httpClient;
+
+        public HttpClientFactory()
         {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
+            _httpClient = new HttpClient();
         }
 
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
+        /// <inheritdoc />
+        public HttpClient GetHttpClient(MsalClientConfiguration clientConfiguration)
+        {
+            return _httpClient;
+        }
     }
 }

@@ -25,15 +25,30 @@
 // 
 // ------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Identity.Client.Logging;
 
 namespace Microsoft.Identity.Client
 {
+    public delegate void TelemetryReceiver(List<Dictionary<string, string>> events);
+
     public interface IPublicClientApplication
     {
-        Task<AuthenticationResult> SignInAsync(AuthenticationParameters authParameters);
-        Task<AuthenticationResult> AcquireTokenInteractivelyAsync(AuthenticationParameters authParameters);
-        Task<AuthenticationResult> AcquireTokenSilentlyAsync(AuthenticationParameters authParameters);
-        Task ShutdownAsync();
+        Task<AuthenticationResult> SignInAsync(AuthenticationParameters authParameters, CancellationToken cancellationToken);
+
+        Task<AuthenticationResult> AcquireTokenInteractivelyAsync(
+            AuthenticationParameters authParameters,
+            CancellationToken cancellationToken);
+
+        Task<AuthenticationResult> AcquireTokenSilentlyAsync(
+            AuthenticationParameters authParameters,
+            CancellationToken cancellationToken);
+
+        event EventHandler<LoggerCallbackEventArgs> LoggerCallback;
+
+        void SetTelemetryReceiver(TelemetryReceiver receiver);
     }
 }

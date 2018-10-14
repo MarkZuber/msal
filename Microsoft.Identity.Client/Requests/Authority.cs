@@ -26,28 +26,24 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Identity.Client.Core;
 
 namespace Microsoft.Identity.Client.Requests
 {
-    internal class Jwt
+    internal abstract class Authority
     {
-        public Jwt(string raw)
+        public virtual Authority Clone()
         {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
+            throw new System.NotImplementedException();
         }
 
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
+        public string GetUserRealmEndpoint(string username)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Uri GetTokenEndpoint()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

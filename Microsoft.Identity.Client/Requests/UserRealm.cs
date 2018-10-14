@@ -34,11 +34,6 @@ namespace Microsoft.Identity.Client.Requests
     [DataContract]
     internal class UserRealm
     {
-        public static UserRealm Create(string response)
-        {
-            return JsonHelper.DeserializeFromJson<UserRealm>(response);
-        }
-
         [DataMember(Name = "ver")]
         public string Version { get; set; }
 
@@ -64,5 +59,10 @@ namespace Microsoft.Identity.Client.Requests
         public string CloudInstanceName { get; }
 
         public bool IsFederated => string.Compare(AccountType, "Federated", StringComparison.OrdinalIgnoreCase) == 0;
+
+        public static UserRealm Create(string response)
+        {
+            return JsonHelper.DeserializeFromJson<UserRealm>(response);
+        }
     }
 }

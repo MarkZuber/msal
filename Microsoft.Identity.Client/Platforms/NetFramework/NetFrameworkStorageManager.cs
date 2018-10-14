@@ -25,29 +25,11 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
-using Microsoft.Identity.Client.Core;
+using Microsoft.Identity.Client.Cache;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Platforms.NetFramework
 {
-    internal class Jwt
+    internal class NetFrameworkStorageManager : IStorageManager
     {
-        public Jwt(string raw)
-        {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
-        }
-
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
     }
 }

@@ -25,13 +25,20 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Telemetry
 {
-    internal interface IMsalInteractiveRequest
+    internal class TelemetryManager : ITelemetryManager
     {
-        Task<AuthenticationResult> ExecuteAsync(CancellationToken cancellationToken);
+        private readonly object _lockObj = new object();
+        private TelemetryReceiver _receiver;
+
+        /// <inheritdoc />
+        public void SetTelemetryReceiver(TelemetryReceiver receiver)
+        {
+            lock (_lockObj)
+            {
+                _receiver = receiver;
+            }
+        }
     }
 }

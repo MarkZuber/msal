@@ -26,28 +26,29 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Identity.Client.Core;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Core
 {
-    internal class Jwt
+    internal static class QueryParameterBuilderExtensions
     {
-        public Jwt(string raw)
+        public static void AddRedirectUriQueryParam(this QueryParameterBuilder builder)
         {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
+            throw new NotImplementedException();
         }
 
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
+        public static void AddClientIdQueryParam(this QueryParameterBuilder builder)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void AddScopeQueryParam(this QueryParameterBuilder builder)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void AddClientInfoQueryParam(this QueryParameterBuilder builder)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

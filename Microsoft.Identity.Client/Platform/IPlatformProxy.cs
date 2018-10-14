@@ -25,13 +25,17 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Identity.Client.Browser;
+using Microsoft.Identity.Client.Cache;
+using Microsoft.Identity.Client.Logging;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Platform
 {
-    internal interface IMsalBackgroundRequest
+    internal interface IPlatformProxy
     {
-        Task<AuthenticationResult> ExecuteAsync(CancellationToken cancellationToken);
+        ISystemUtils GetSystemUtils();
+        IStorageManager CreateStorageManager();
+        IBrowserFactory CreateBrowserFactory();
+        ILogger CreateLogger(string telemetryCorrelationId);
     }
 }

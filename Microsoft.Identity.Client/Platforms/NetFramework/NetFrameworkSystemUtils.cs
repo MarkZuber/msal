@@ -26,28 +26,34 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Identity.Client.Core;
+using Microsoft.Identity.Client.Platform;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Platforms.NetFramework
 {
-    internal class Jwt
+    internal class NetFrameworkSystemUtils : ISystemUtils
     {
-        public Jwt(string raw)
+        /// <inheritdoc />
+        public string GetCurrentUsername()
         {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
+            throw new NotImplementedException();
         }
 
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
+        /// <inheritdoc />
+        public string GetClientSku()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public string GetOsVersion()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public string GetProductVersion()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,55 +1,156 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// ------------------------------------------------------------------------------
+// 
+// Copyright (c) Microsoft Corporation.
+// All rights reserved.
+// 
+// This code is licensed under the MIT License.
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+// 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+// 
+// ------------------------------------------------------------------------------
+
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client.Browser;
 using Microsoft.Identity.Client.Cache;
+using Microsoft.Identity.Client.Core;
 using Microsoft.Identity.Client.Http;
+using Microsoft.Identity.Client.Logging;
+using Microsoft.Identity.Client.Platform;
 using Microsoft.Identity.Client.Requests;
+using Microsoft.Identity.Client.Telemetry;
 
 namespace Microsoft.Identity.Client
 {
     public class PublicClientApplication : IPublicClientApplication
     {
-        private readonly IHttpManager _httpManager;
-        private readonly EnvironmentMetadata _environmentMetadata;
-        private readonly IStorageManager _storageManager;
         private readonly IBrowserFactory _browserFactory;
-        private readonly IRequestDispatcher _requestDispatcher;
+        private readonly EnvironmentMetadata _environmentMetadata;
+        private readonly IGuidService _guidService;
+        private readonly IHttpManager _httpManager;
+        private readonly IPlatformProxy _platformProxy;
+        private readonly IStorageManager _storageManager;
+        private readonly ITelemetryManager _telemetryManager;
 
-        /// <inheritdoc />
-        public async Task<AuthenticationResult> SignInAsync(AuthenticationParameters authParameters)
+        public PublicClientApplication(MsalClientConfiguration msalClientConfiguration)
+            : this(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                msalClientConfiguration)
         {
-            var webRequestManager = new WebRequestManager(_httpManager, _environmentMetadata, authParameters);
-            var cacheManager = new CacheManager(_storageManager, authParameters);
-            var request = new MsalInteractiveRequest(
-                _requestDispatcher,
-                webRequestManager,
-                cacheManager,
-                _browserFactory,
-                authParameters);
-            return await _requestDispatcher.ExecuteInteractiveRequestAsync(request);
+        }
+
+        internal PublicClientApplication(
+            IHttpManager httpManager,
+            IStorageManager storageManager,
+            IBrowserFactory browserFactory,
+            IGuidService guidService,
+            ITelemetryManager telemetryManager,
+            EnvironmentMetadata environmentMetadata,
+            MsalClientConfiguration msalClientConfiguration)
+        {
+            _platformProxy = PlatformProxyFactory.GetPlatformProxy();
+
+            _httpManager = httpManager ?? new HttpManager(new HttpClientFactory(), msalClientConfiguration);
+            _storageManager = storageManager ?? _platformProxy.CreateStorageManager();
+            _browserFactory = browserFactory ?? _platformProxy.CreateBrowserFactory();
+            _guidService = guidService ?? new GuidService();
+            _telemetryManager = telemetryManager ?? new TelemetryManager();
+            _environmentMetadata = environmentMetadata ?? new EnvironmentMetadata();
         }
 
         /// <inheritdoc />
-        public async Task<AuthenticationResult> AcquireTokenInteractivelyAsync(AuthenticationParameters authParameters)
+        public async Task<AuthenticationResult> SignInAsync(
+            AuthenticationParameters authParameters,
+            CancellationToken cancellationToken)
         {
-            return await SignInAsync(authParameters).ConfigureAwait(false);
+            var request = CreateRequest(authParameters, true);
+            return await request.ExecuteAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public async Task<AuthenticationResult> AcquireTokenSilentlyAsync(AuthenticationParameters authParameters)
+        public async Task<AuthenticationResult> AcquireTokenInteractivelyAsync(
+            AuthenticationParameters authParameters,
+            CancellationToken cancellationToken)
         {
-            var webRequestManager = new WebRequestManager(_httpManager, _environmentMetadata, authParameters);
-            var cacheManager = new CacheManager(_storageManager, authParameters);
-            var request = new MsalBackgroundRequest(webRequestManager, cacheManager, authParameters);
-            return await _requestDispatcher.ExecuteBackgroundRequestAsync(request).ConfigureAwait(false);
+            return await SignInAsync(authParameters, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public async Task ShutdownAsync()
+        public async Task<AuthenticationResult> AcquireTokenSilentlyAsync(
+            AuthenticationParameters authParameters,
+            CancellationToken cancellationToken)
         {
-            await _requestDispatcher.ShutdownAsync();
+            var request = CreateRequest(authParameters, false);
+            return await request.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public event EventHandler<LoggerCallbackEventArgs> LoggerCallback;
+
+        /// <inheritdoc />
+        public void SetTelemetryReceiver(TelemetryReceiver receiver)
+        {
+            _telemetryManager.SetTelemetryReceiver(receiver);
+        }
+
+        private IMsalRequest CreateRequest(
+            AuthenticationParameters authParameters,
+            bool isInteractive)
+        {
+            var authParams = authParameters.Clone();
+
+            authParams.TelemetryCorrelationId = _guidService.NewGuid().ToString("D");
+            authParams.Logger = _platformProxy.CreateLogger(authParams.TelemetryCorrelationId);
+            authParams.Logger.LoggerCallback += OnLoggerCallback;
+
+            var webRequestManager = new WebRequestManager(
+                _httpManager,
+                _platformProxy.GetSystemUtils(),
+                _environmentMetadata,
+                authParams);
+            var cacheManager = new CacheManager(_storageManager, authParams);
+
+            if (isInteractive)
+            {
+                return new MsalInteractiveRequest(webRequestManager, cacheManager, _browserFactory, authParams);
+            }
+            else
+            {
+                return new MsalBackgroundRequest(
+                    webRequestManager,
+                    cacheManager,
+                    _platformProxy.GetSystemUtils(),
+                    authParams);
+            }
+        }
+
+        private void OnLoggerCallback(
+            object sender,
+            LoggerCallbackEventArgs e)
+        {
+            LoggerCallback?.Invoke(sender, e);
         }
     }
 }

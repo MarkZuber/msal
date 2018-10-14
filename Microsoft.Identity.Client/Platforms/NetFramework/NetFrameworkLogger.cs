@@ -26,28 +26,39 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Identity.Client.Core;
+using Microsoft.Identity.Client.Logging;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Platforms.NetFramework
 {
-    internal class Jwt
+    public class NetFrameworkLogger : ILogger
     {
-        public Jwt(string raw)
+        private readonly string _telemetryCorrelationId;
+
+        public NetFrameworkLogger(string telemetryCorrelationId)
         {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
+            _telemetryCorrelationId = telemetryCorrelationId;
         }
 
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
+        /// <inheritdoc />
+        public event EventHandler<LoggerCallbackEventArgs> LoggerCallback;
+
+        /// <inheritdoc />
+        public void LogInfo(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public void LogInfoPii(
+            string piiMessage,
+            string noPiiMessage)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void LogInternal()
+        {
+            LoggerCallback?.Invoke(this, new LoggerCallbackEventArgs(false, LogLevel.Debug, string.Empty));
+        }
     }
 }

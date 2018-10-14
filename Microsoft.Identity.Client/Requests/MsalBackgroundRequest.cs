@@ -33,7 +33,7 @@ using Microsoft.Identity.Client.Platform;
 
 namespace Microsoft.Identity.Client.Requests
 {
-    internal class MsalBackgroundRequest : IMsalBackgroundRequest
+    internal class MsalBackgroundRequest : IMsalRequest
     {
         private readonly AuthenticationParameters _authParameters;
         private readonly CacheManager _cacheManager;
@@ -117,7 +117,7 @@ namespace Microsoft.Identity.Client.Requests
             }
             else
             {
-                return await _webRequestManager.GetAccessTokenFromUsernamePasswordAsync(cancellationToken);
+                return await _webRequestManager.GetAccessTokenFromUsernamePasswordAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -131,7 +131,7 @@ namespace Microsoft.Identity.Client.Requests
                 throw new InvalidOperationException("failed to retrieve current user name");
             }
 
-            _authParameters.Username = username;
+            _authParameters.UserName = username;
 
             var userRealm = await _webRequestManager.GetUserRealmAsync(cancellationToken).ConfigureAwait(false);
             if (!userRealm.IsFederated)

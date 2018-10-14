@@ -25,15 +25,13 @@
 // 
 // ------------------------------------------------------------------------------
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Identity.Client.Requests
 {
-    internal interface IRequestDispatcher
+    internal interface IMsalRequest
     {
-        Task<AuthenticationResult> ExecuteInteractiveRequestAsync(MsalInteractiveRequest request);
-        Task<AuthenticationResult> ExecuteBackgroundRequestAsync(MsalBackgroundRequest request);
-        Task StartupAsync();
-        Task ShutdownAsync();
+        Task<AuthenticationResult> ExecuteAsync(CancellationToken cancellationToken);
     }
 }

@@ -26,28 +26,23 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Identity.Client.Core;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Logging
 {
-    internal class Jwt
+    public class LoggerCallbackEventArgs : EventArgs
     {
-        public Jwt(string raw)
+        internal LoggerCallbackEventArgs(
+            bool isPii,
+            LogLevel level,
+            string message)
         {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
+            IsPii = isPii;
+            Level = level;
+            Message = message;
         }
 
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
+        public bool IsPii { get; }
+        public LogLevel Level { get; }
+        public string Message { get; }
     }
 }

@@ -26,19 +26,29 @@
 // ------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Identity.Client.Core;
 using Microsoft.Identity.Client.Http;
+using Microsoft.Identity.Client.Platform;
 using Microsoft.Identity.Client.Requests.WsTrust;
 
 namespace Microsoft.Identity.Client.Requests
 {
     internal static class OAuth2Scope
     {
-        public static readonly string OpenId = "openid";
-        public static readonly string OfflineAccess = "offline_access";
-        public static readonly string Profile = "profile";
+        public const string OpenId = "openid";
+        public const string OfflineAccess = "offline_access";
+        public const string Profile = "profile";
+    }
+
+    internal static class ServerHeaderKey
+    {
+        public const string XClientSku = "x-client-SKU";
+        public const string XClientOs = "x-client-OS";
+        public const string XClientVer = "x-client-Ver";
     }
 
     internal class WebRequestManager
@@ -46,13 +56,16 @@ namespace Microsoft.Identity.Client.Requests
         private readonly AuthenticationParameters _authenticationParameters;
         private readonly EnvironmentMetadata _environmentMetadata;
         private readonly IHttpManager _httpManager;
+        private readonly ISystemUtils _systemUtils;
 
         public WebRequestManager(
             IHttpManager httpManager,
+            ISystemUtils systemUtils,
             EnvironmentMetadata environmentMetadata,
             AuthenticationParameters authenticationParameters)
         {
             _httpManager = httpManager;
+            _systemUtils = systemUtils;
             _environmentMetadata = environmentMetadata;
             _authenticationParameters = authenticationParameters;
 
@@ -69,7 +82,7 @@ namespace Microsoft.Identity.Client.Requests
         public async Task<UserRealm> GetUserRealmAsync(CancellationToken cancellationToken)
         {
             string url = _authenticationParameters.Authority.GetUserRealmEndpoint(_authenticationParameters.UserName);
-            HttpManagerResponse response = await _httpManager.GetAsync(new Uri(url), GetVersionHeaders(), cancellationToken);
+            var response = await _httpManager.GetAsync(new Uri(url), GetVersionHeaders(), cancellationToken);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 // todo: exception type
@@ -79,9 +92,21 @@ namespace Microsoft.Identity.Client.Requests
             return UserRealm.Create(response.ResponseData);
         }
 
-        public async Task<WsTrustMexDocument> GetMexAsync(string federationMetadataUrl, CancellationToken cancellationToken)
+        private IDictionary<string, string> GetVersionHeaders()
         {
-            HttpManagerResponse response = await _httpManager.GetAsync(new Uri(federationMetadataUrl), null, cancellationToken);
+            return new Dictionary<string, string>
+            {
+                [ServerHeaderKey.XClientSku] = _systemUtils.GetClientSku(),
+                [ServerHeaderKey.XClientOs] = _systemUtils.GetOsVersion(),
+                [ServerHeaderKey.XClientVer] = _systemUtils.GetProductVersion()
+            };
+        }
+
+        public async Task<WsTrustMexDocument> GetMexAsync(
+            string federationMetadataUrl,
+            CancellationToken cancellationToken)
+        {
+            var response = await _httpManager.GetAsync(new Uri(federationMetadataUrl), null, cancellationToken);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 // todo: exception type
@@ -91,24 +116,131 @@ namespace Microsoft.Identity.Client.Requests
             return WsTrustMexDocument.Create(response.ResponseData);
         }
 
-        public Task<WsTrustResponse> GetWsTrustResponseAsync(string cloudAudienceUrn, WsTrustEndpoint endpoint, CancellationToken cancellationToken)
+        public async Task<WsTrustResponse> GetWsTrustResponseAsync(
+            string cloudAudienceUrn,
+            WsTrustEndpoint endpoint,
+            CancellationToken cancellationToken)
         {
+            string wsTrustRequestMessage;
+            var authorizationType = _authenticationParameters.AuthorizationType;
+            switch (authorizationType)
+            {
+            case AuthorizationType.WindowsIntegratedAuth:
+                wsTrustRequestMessage = endpoint.BuildTokenRequestMessageWIA(cloudAudienceUrn);
+                break;
+            case AuthorizationType.UsernamePassword:
+                wsTrustRequestMessage = endpoint.BuildTokenRequestMessageUsernamePassword(
+                    cloudAudienceUrn,
+                    _authenticationParameters.UserName,
+                    _authenticationParameters.Password);
+                break;
+            default:
+                throw new InvalidOperationException();
+            }
+
+            string soapAction = endpoint.IsWsTrust2005()
+                                    ? WsTrustMexDocument.Trust2005Spec
+                                    : WsTrustMexDocument.Trust13Spec;
+
+            var requestHeaders = new Dictionary<string, string>
+            {
+                ["SOAPAction"] = soapAction,
+                ["Content-Type"] = "application/soap+xml; charset=utf-8"
+            };
+
+            var response = await _httpManager
+                                 .PostAsync(endpoint.Url, requestHeaders, wsTrustRequestMessage, cancellationToken)
+                                 .ConfigureAwait(false);
+            return WsTrustResponse.Create(response.ResponseData);
         }
 
-        public Task<TokenResponse> GetAccessTokenFromSamlGrantAsync(SamlTokenInfo samlGrant, CancellationToken cancellationToken)
+        public async Task<TokenResponse> GetAccessTokenFromSamlGrantAsync(
+            SamlTokenInfo samlGrant,
+            CancellationToken cancellationToken)
         {
+            QueryParameterBuilder queryParams;
+            switch (samlGrant.GetAssertionType())
+            {
+            case SamlAssertionType.SamlV1:
+                queryParams = new QueryParameterBuilder("grant_type", "urn:ietf:params:oauth:grant-type:saml1_1-bearer");
+                break;
+            case SamlAssertionType.SamlV2:
+                queryParams = new QueryParameterBuilder("grant_type", "urn:ietf:params:oauth:grant-type:saml2-bearer");
+                break;
+            default:
+                throw new InvalidOperationException(); // (MsalXmlException, MSAL_SAML_ENUM_UNKNOWN_VERSION);
+            }
+
+            queryParams.AddQueryPair("assertion", _authenticationParameters.UserName);
+            queryParams.AddQueryPair("password", EncodingUtils.Base64RfcEncodePadded(samlGrant.GetAssertion()));
+            queryParams.AddClientIdQueryParam();
+            queryParams.AddScopeQueryParam();
+            queryParams.AddClientInfoQueryParam();
+
+            var headers = GetVersionHeaders();
+            headers["Content-Type"] = "application/x-www-form-urlencoded";
+
+            var response = await _httpManager.PostAsync(
+                               _authenticationParameters.Authority.GetTokenEndpoint(),
+                               headers,
+                               queryParams.ToString(),
+                               cancellationToken).ConfigureAwait(false);
+
+            return TokenResponse.Create(response.ResponseData);
         }
 
-        public Task<TokenResponse> GetAccessTokenFromUsernamePasswordAsync(CancellationToken cancellationToken)
+        public async Task<TokenResponse> GetAccessTokenFromUsernamePasswordAsync(CancellationToken cancellationToken)
         {
+            var queryParams = new QueryParameterBuilder("grant_type", "password");
+            queryParams.AddQueryPair("username", _authenticationParameters.UserName);
+            queryParams.AddQueryPair("password", _authenticationParameters.Password);
+            queryParams.AddClientIdQueryParam();
+            queryParams.AddScopeQueryParam();
+            queryParams.AddClientInfoQueryParam();
+
+            var response = await _httpManager.PostAsync(
+                               _authenticationParameters.Authority.GetTokenEndpoint(),
+                               GetVersionHeaders(),
+                               queryParams.ToString(),
+                               cancellationToken).ConfigureAwait(false);
+            return TokenResponse.Create(response.ResponseData);
         }
 
-        public Task<TokenResponse> GetAccessTokenFromAuthCodeAsync(string authCode, CancellationToken cancellationToken)
+        public async Task<TokenResponse> GetAccessTokenFromAuthCodeAsync(
+            string authCode,
+            CancellationToken cancellationToken)
         {
+            var queryParams = new QueryParameterBuilder("grant_type", "authorization_code");
+            queryParams.AddQueryPair("code", authCode);
+            queryParams.AddRedirectUriQueryParam();
+            queryParams.AddClientIdQueryParam();
+            queryParams.AddScopeQueryParam();
+            queryParams.AddClientInfoQueryParam();
+
+            var response = await _httpManager.PostAsync(
+                               _authenticationParameters.Authority.GetTokenEndpoint(),
+                               GetVersionHeaders(),
+                               queryParams.ToString(),
+                               cancellationToken).ConfigureAwait(false);
+            return TokenResponse.Create(response.ResponseData);
         }
 
-        public Task<TokenResponse> GetAccessTokenFromRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
+        public async Task<TokenResponse> GetAccessTokenFromRefreshTokenAsync(
+            string refreshToken,
+            CancellationToken cancellationToken)
         {
+            var queryParams = new QueryParameterBuilder("grant_type", "refresh_token");
+            queryParams.AddQueryPair("refresh_token", refreshToken);
+            queryParams.AddClientIdQueryParam();
+            queryParams.AddScopeQueryParam();
+            queryParams.AddClientInfoQueryParam();
+
+            var response = await _httpManager.PostAsync(
+                               _authenticationParameters.Authority.GetTokenEndpoint(),
+                               GetVersionHeaders(),
+                               queryParams.ToString(),
+                               cancellationToken).ConfigureAwait(false);
+            return TokenResponse.Create(response.ResponseData);
         }
     }
 }

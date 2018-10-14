@@ -26,28 +26,16 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Identity.Client.Core;
+using Microsoft.Identity.Client.Platforms.NetFramework;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.Platform
 {
-    internal class Jwt
+    internal static class PlatformProxyFactory
     {
-        public Jwt(string raw)
+        public static IPlatformProxy GetPlatformProxy()
         {
-            Raw = raw ?? throw new ArgumentNullException(nameof(raw));
-
-            string[] sections = Raw.Split('.');
-            if (sections.Length != 3)
-            {
-                throw new InvalidOperationException();
-            }
-
-            Payload = EncodingUtils.Base64UrlDecodeUnpadded(sections[1]);
-            IsSigned = !string.IsNullOrEmpty(sections[2]);
+            // TODO: check platform environment variables and create appropriate platform.
+            return new NetFrameworkPlatformProxy();
         }
-
-        public string Raw { get; }
-        public string Payload { get; }
-        public bool IsSigned { get; }
     }
 }
