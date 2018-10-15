@@ -40,6 +40,6 @@ namespace Microsoft.Identity.Client.Platform
 
         ILogger CreateLogger(
             Guid telemetryCorrelationId,
-            MsalClientConfiguration msalClientConfiguraiton);
+            MsalClientConfiguration msalClientConfiguration);
     }
 }
