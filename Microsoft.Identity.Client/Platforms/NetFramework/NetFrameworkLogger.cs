@@ -36,9 +36,9 @@ namespace Microsoft.Identity.Client.Platforms.NetFramework
 {
     internal class NetFrameworkLogger : ILogger
     {
+        private readonly MsalClientConfiguration _msalClientConfiguration;
         private readonly ISystemUtils _systemUtils;
         private readonly ITimeService _timeService;
-        private readonly MsalClientConfiguration _msalClientConfiguration;
 
         public NetFrameworkLogger(
             ISystemUtils systemUtils,
@@ -223,7 +223,7 @@ namespace Microsoft.Identity.Client.Platforms.NetFramework
                 "{0} MSAL {1} {2} {3} [{4}{5}] {6}",
                 isLoggingPii ? "(True)" : "(False)",
                 _systemUtils.GetProductVersion(),
-                _systemUtils.GetClientSku(),  // todo: ensure this is the same as MSAL today...
+                _systemUtils.GetClientSku(), // todo: ensure this is the same as MSAL today...
                 _systemUtils.GetOperatingSystem(),
                 _timeService.GetUtcNow(),
                 correlationId,

@@ -162,7 +162,9 @@ namespace Microsoft.Identity.Client.Requests
             switch (samlGrant.AssertionType)
             {
             case SamlAssertionType.SamlV1:
-                queryParams = new QueryParameterBuilder("grant_type", "urn:ietf:params:oauth:grant-type:saml1_1-bearer");
+                queryParams = new QueryParameterBuilder(
+                    "grant_type",
+                    "urn:ietf:params:oauth:grant-type:saml1_1-bearer");
                 break;
             case SamlAssertionType.SamlV2:
                 queryParams = new QueryParameterBuilder("grant_type", "urn:ietf:params:oauth:grant-type:saml2-bearer");
@@ -177,7 +179,7 @@ namespace Microsoft.Identity.Client.Requests
             AddScopeQueryParam(queryParams);
             AddClientInfoQueryParam(queryParams);
 
-            var headers = GetVersionHeaders();
+            IDictionary<string, string> headers = GetVersionHeaders();
             headers["Content-Type"] = "application/x-www-form-urlencoded";
 
             var response = await _httpManager.PostAsync(
@@ -262,6 +264,5 @@ namespace Microsoft.Identity.Client.Requests
         {
             builder.AddQueryPair("client_id", _authenticationParameters.ClientId);
         }
-
     }
 }

@@ -53,20 +53,18 @@ namespace Microsoft.Identity.Client.Requests
 
         public Uri GetUserRealmEndpoint(string username)
         {
-            return new Uri(string.Format(
-                CultureInfo.InvariantCulture,
-                "https://{0}/common/UserRealm/{1}?api-version=1.0",
-                _environment,
-                EncodingUtils.UrlEncode(username)));
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "https://{0}/common/UserRealm/{1}?api-version=1.0",
+                    _environment,
+                    EncodingUtils.UrlEncode(username)));
         }
 
         public Uri GetTokenEndpoint()
         {
-            return new Uri(string.Format(
-                CultureInfo.InvariantCulture,
-                "https://{0}/{1}/oauth2/v2.0/token",
-                _environment,
-                _realm));
+            return new Uri(
+                string.Format(CultureInfo.InvariantCulture, "https://{0}/{1}/oauth2/v2.0/token", _environment, _realm));
         }
 
         private static string GetFirstPathSegment(string authority)

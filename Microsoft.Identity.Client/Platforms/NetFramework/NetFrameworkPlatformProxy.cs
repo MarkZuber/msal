@@ -35,8 +35,8 @@ namespace Microsoft.Identity.Client.Platforms.NetFramework
 {
     internal class NetFrameworkPlatformProxy : IPlatformProxy
     {
-        private readonly ISystemUtils _systemUtils = new NetFrameworkSystemUtils();
         private readonly IBrowserFactory _browserFactory = new NetFrameworkBrowserFactory();
+        private readonly ISystemUtils _systemUtils = new NetFrameworkSystemUtils();
 
         /// <inheritdoc />
         public ISystemUtils GetSystemUtils()
@@ -57,7 +57,9 @@ namespace Microsoft.Identity.Client.Platforms.NetFramework
         }
 
         /// <inheritdoc />
-        public ILogger CreateLogger(Guid correlationId, MsalClientConfiguration msalClientConfiguration)
+        public ILogger CreateLogger(
+            Guid correlationId,
+            MsalClientConfiguration msalClientConfiguration)
         {
             return new NetFrameworkLogger(GetSystemUtils(), correlationId, msalClientConfiguration);
         }

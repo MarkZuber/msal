@@ -34,8 +34,9 @@ namespace Microsoft.Identity.Client
     public class MsalClientConfiguration
     {
         private readonly object _lockObj = new object();
-        private LogLevel _logLevel = LogLevel.Error;
         private bool _isPiiLoggingEnabled = false;
+        private LogLevel _logLevel = LogLevel.Error;
+        private TelemetryReceiver _receiver;
 
         public LogLevel LogLevel
         {
@@ -73,6 +74,8 @@ namespace Microsoft.Identity.Client
             }
         }
 
+        public string UserAgent { get; set; } = "Mozilla/5.0 (compatible; MSAL 1.0)";
+        public int HttpTimeoutSeconds { get; set; } = 10;
         public event EventHandler<LoggerCallbackEventArgs> LoggerCallback;
 
         internal void InvokeLoggerCallback(
@@ -85,7 +88,6 @@ namespace Microsoft.Identity.Client
             }
         }
 
-        private TelemetryReceiver _receiver;
         public void SetTelemetryReceiver(TelemetryReceiver receiver)
         {
             lock (_lockObj)
@@ -101,8 +103,5 @@ namespace Microsoft.Identity.Client
                 _receiver?.Invoke(events);
             }
         }
-
-        public string UserAgent { get; set; } = "Mozilla/5.0 (compatible; MSAL 1.0)";
-        public int HttpTimeoutSeconds { get; set; } = 10;
     }
 }

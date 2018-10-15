@@ -34,7 +34,10 @@ namespace Microsoft.Identity.Client.Requests
 {
     internal class TokenResponse
     {
-        public TokenResponse(IdToken idToken, Credential accessToken, Credential refreshToken)
+        public TokenResponse(
+            IdToken idToken,
+            Credential accessToken,
+            Credential refreshToken)
         {
             IdToken = idToken ?? new IdToken(string.Empty);
             if (accessToken != null)
@@ -50,17 +53,6 @@ namespace Microsoft.Identity.Client.Requests
                 RefreshToken = refreshToken.Secret;
             }
         }
-
-        public string AccessToken { get; }
-        public DateTime ExpiresOn { get; }
-        public DateTime ExtendedExpiresOn { get; }
-        public IEnumerable<string> Scopes { get; }
-        public IdToken IdToken { get; }
-        public string RefreshToken { get; }
-        public string Uid { get; }
-        public string Utid { get; }
-        public bool HasAccessToken => !string.IsNullOrWhiteSpace(AccessToken);
-        public bool HasRefreshToken => !string.IsNullOrWhiteSpace(RefreshToken);
 
         internal TokenResponse(
             MsalTokenResponse mtr,
@@ -80,6 +72,17 @@ namespace Microsoft.Identity.Client.Requests
             Uid = clientInfo.UniqueObjectIdentifier;
             Utid = clientInfo.UniqueTenantIdentifier;
         }
+
+        public string AccessToken { get; }
+        public DateTime ExpiresOn { get; }
+        public DateTime ExtendedExpiresOn { get; }
+        public IEnumerable<string> Scopes { get; }
+        public IdToken IdToken { get; }
+        public string RefreshToken { get; }
+        public string Uid { get; }
+        public string Utid { get; }
+        public bool HasAccessToken => !string.IsNullOrWhiteSpace(AccessToken);
+        public bool HasRefreshToken => !string.IsNullOrWhiteSpace(RefreshToken);
 
         public static TokenResponse Create(string response)
         {
@@ -174,11 +177,7 @@ namespace Microsoft.Identity.Client.Requests
             [DataMember(Name = TokenResponseClaim.ExtendedExpiresIn, IsRequired = false)]
             public long ExtendedExpiresIn { get; set; }
 
-            public DateTimeOffset AccessTokenExpiresOn
-            {
-                get { return DateTime.UtcNow + TimeSpan.FromSeconds(ExpiresIn); }
-            }
+            public DateTimeOffset AccessTokenExpiresOn => DateTime.UtcNow + TimeSpan.FromSeconds(ExpiresIn);
         }
-
     }
 }

@@ -25,7 +25,6 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client.Browser;
@@ -44,10 +43,10 @@ namespace Microsoft.Identity.Client
         private readonly EnvironmentMetadata _environmentMetadata;
         private readonly IGuidService _guidService;
         private readonly IHttpManager _httpManager;
+        private readonly MsalClientConfiguration _msalClientConfiguration;
         private readonly IPlatformProxy _platformProxy;
         private readonly IStorageManager _storageManager;
         private readonly ITelemetryManager _telemetryManager;
-        private readonly MsalClientConfiguration _msalClientConfiguration;
 
         public PublicClientApplication(MsalClientConfiguration msalClientConfiguration)
             : this(
@@ -114,7 +113,9 @@ namespace Microsoft.Identity.Client
             var authParams = authParameters.Clone();
 
             authParams.TelemetryCorrelationId = _guidService.NewGuid();
-            authParams.Logger = _platformProxy.CreateLogger(authParams.TelemetryCorrelationId, _msalClientConfiguration);
+            authParams.Logger = _platformProxy.CreateLogger(
+                authParams.TelemetryCorrelationId,
+                _msalClientConfiguration);
 
             var webRequestManager = new WebRequestManager(
                 _httpManager,

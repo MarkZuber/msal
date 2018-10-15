@@ -42,7 +42,6 @@ namespace Microsoft.Identity.Client.Logging
         Guid CorrelationId { get; set; }
         bool PiiLoggingEnabled { get; }
         LogLevel Level { get; }
-
         void Error(string messageScrubbed);
 
         void ErrorPii(

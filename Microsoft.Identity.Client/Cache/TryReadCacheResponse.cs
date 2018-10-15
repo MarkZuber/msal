@@ -31,7 +31,10 @@ namespace Microsoft.Identity.Client.Cache
 {
     internal class TryReadCacheResponse
     {
-        public TryReadCacheResponse(bool isCacheReadSuccessful, Account account, TokenResponse tokenResponse)
+        public TryReadCacheResponse(
+            bool isCacheReadSuccessful,
+            Account account,
+            TokenResponse tokenResponse)
         {
             IsCacheReadSuccessful = isCacheReadSuccessful;
             Account = account;

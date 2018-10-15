@@ -38,6 +38,8 @@ namespace Microsoft.Identity.Client.Platform
         IStorageManager CreateStorageManager();
         IBrowserFactory CreateBrowserFactory();
 
-        ILogger CreateLogger(Guid telemetryCorrelationId, MsalClientConfiguration msalClientConfiguraiton);
+        ILogger CreateLogger(
+            Guid telemetryCorrelationId,
+            MsalClientConfiguration msalClientConfiguraiton);
     }
 }

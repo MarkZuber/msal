@@ -39,9 +39,8 @@ namespace Microsoft.Identity.Client.Requests.WsTrust
         public const string Trust13Spec = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue";
         private const string WsTrustSoapTransport = "http://schemas.xmlsoap.org/soap/http";
         private readonly Dictionary<string, MexPolicy> _bindings = new Dictionary<string, MexPolicy>();
-        private readonly Dictionary<string, MexPolicy> _policies = new Dictionary<string, MexPolicy>();
-
         private readonly IGuidService _guidService;
+        private readonly Dictionary<string, MexPolicy> _policies = new Dictionary<string, MexPolicy>();
         private readonly ITimeService _timeService;
 
         internal WsTrustMexDocument(string response)

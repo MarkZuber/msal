@@ -56,10 +56,10 @@ namespace Microsoft.Identity.Client.Core
             }
 
             T response;
-            var serializer = new DataContractJsonSerializer(typeof (T));
+            var serializer = new DataContractJsonSerializer(typeof(T));
             using (var stream = new MemoryStream(jsonByteArray))
             {
-                response = ((T) serializer.ReadObject(stream));
+                response = (T)serializer.ReadObject(stream);
             }
 
             return response;

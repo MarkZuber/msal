@@ -36,7 +36,10 @@ namespace Microsoft.Identity.Client.Http
         private readonly int _maxDelayMilliseconds;
         private readonly int _maxRetries;
 
-        public RetryWithExponentialBackoff(int maxRetries = 50, int delayMilliseconds = 200, int maxDelayMilliseconds = 2000)
+        public RetryWithExponentialBackoff(
+            int maxRetries = 50,
+            int delayMilliseconds = 200,
+            int maxDelayMilliseconds = 2000)
         {
             _maxRetries = maxRetries;
             _delayMilliseconds = delayMilliseconds;

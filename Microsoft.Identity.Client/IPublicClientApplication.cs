@@ -25,7 +25,6 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +35,9 @@ namespace Microsoft.Identity.Client
 
     public interface IPublicClientApplication
     {
-        Task<AuthenticationResult> SignInAsync(AuthenticationParameters authParameters, CancellationToken cancellationToken);
+        Task<AuthenticationResult> SignInAsync(
+            AuthenticationParameters authParameters,
+            CancellationToken cancellationToken);
 
         Task<AuthenticationResult> AcquireTokenInteractivelyAsync(
             AuthenticationParameters authParameters,

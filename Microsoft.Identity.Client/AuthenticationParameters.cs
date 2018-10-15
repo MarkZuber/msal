@@ -45,16 +45,17 @@ namespace Microsoft.Identity.Client
 
     public class AuthenticationParameters
     {
+        private readonly HashSet<string> _requestedScopes = new HashSet<string>();
         public AuthorizationType AuthorizationType { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
 
         public string Authority
         {
-            get { return AuthorityUri.ToString(); }
-            set { AuthorityUri = new Authority(value); }
+            get => AuthorityUri.ToString();
+            set => AuthorityUri = new Authority(value);
         }
-        
+
         internal Authority AuthorityUri { get; set; }
         internal Guid TelemetryCorrelationId { get; set; }
         internal ILogger Logger { get; set; }
@@ -74,7 +75,6 @@ namespace Microsoft.Identity.Client
             };
         }
 
-        private readonly HashSet<string> _requestedScopes = new HashSet<string>();
         internal void AddScope(string scope)
         {
             _requestedScopes.Add(scope);

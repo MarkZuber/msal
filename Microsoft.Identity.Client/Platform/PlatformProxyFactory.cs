@@ -25,7 +25,6 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
 using Microsoft.Identity.Client.Platforms.NetFramework;
 
 namespace Microsoft.Identity.Client.Platform

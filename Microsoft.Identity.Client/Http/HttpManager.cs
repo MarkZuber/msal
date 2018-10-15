@@ -38,7 +38,9 @@ namespace Microsoft.Identity.Client.Http
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly MsalClientConfiguration _msalClientConfiguration;
 
-        public HttpManager(IHttpClientFactory httpClientFactory, MsalClientConfiguration clientConfiguration)
+        public HttpManager(
+            IHttpClientFactory httpClientFactory,
+            MsalClientConfiguration clientConfiguration)
         {
             _httpClientFactory = httpClientFactory;
             _msalClientConfiguration = clientConfiguration;
@@ -76,7 +78,8 @@ namespace Microsoft.Identity.Client.Http
         private async Task<HttpManagerResponse> SendHttpRequestWithRetryAsync(
             HttpMethod httpMethod,
             Uri uri,
-            IDictionary<string, string> requestHeaders,
+            IDictionary<string, string>
+                requestHeaders,
             string body,
             CancellationToken cancellationToken)
         {
@@ -109,15 +112,19 @@ namespace Microsoft.Identity.Client.Http
                 requestMessage.Method = httpMethod;
                 requestMessage.Content = body;
 
-                using (var responseMessage = await httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false))
+                using (var responseMessage =
+                    await httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false))
                 {
-                    return await CreateResponseAsync(responseMessage, httpClient.DefaultRequestHeaders.UserAgent.ToString())
-                               .ConfigureAwait(false);
+                    return await CreateResponseAsync(
+                               responseMessage,
+                               httpClient.DefaultRequestHeaders.UserAgent.ToString()).ConfigureAwait(false);
                 }
             }
         }
 
-        private async Task<HttpManagerResponse> CreateResponseAsync(HttpResponseMessage response, string userAgent)
+        private async Task<HttpManagerResponse> CreateResponseAsync(
+            HttpResponseMessage response,
+            string userAgent)
         {
             return new HttpManagerResponse(
                 response.StatusCode,
@@ -126,7 +133,9 @@ namespace Microsoft.Identity.Client.Http
                 userAgent);
         }
 
-        private HttpRequestMessage CreateRequestMessage(Uri uri, IDictionary<string, string> headers)
+        private HttpRequestMessage CreateRequestMessage(
+            Uri uri,
+            IDictionary<string, string> headers)
         {
             var message = new HttpRequestMessage
             {

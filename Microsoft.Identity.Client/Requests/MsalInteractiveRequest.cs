@@ -35,8 +35,8 @@ namespace Microsoft.Identity.Client.Requests
 {
     internal class MsalInteractiveRequest : IMsalRequest
     {
-        private readonly IBrowserFactory _browserFactory;
         private readonly AuthenticationParameters _authParameters;
+        private readonly IBrowserFactory _browserFactory;
         private readonly CacheManager _cacheManager;
         private readonly WebRequestManager _webRequestManager;
 
