@@ -25,6 +25,7 @@
 // 
 // ------------------------------------------------------------------------------
 
+using System;
 using Microsoft.Identity.Client.Browser;
 using Microsoft.Identity.Client.Cache;
 using Microsoft.Identity.Client.Logging;
@@ -36,6 +37,7 @@ namespace Microsoft.Identity.Client.Platform
         ISystemUtils GetSystemUtils();
         IStorageManager CreateStorageManager();
         IBrowserFactory CreateBrowserFactory();
-        ILogger CreateLogger(string telemetryCorrelationId);
+
+        ILogger CreateLogger(Guid telemetryCorrelationId, MsalClientConfiguration msalClientConfiguraiton);
     }
 }

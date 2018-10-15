@@ -25,20 +25,103 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
+using Microsoft.Identity.Client.Core;
 
 namespace Microsoft.Identity.Client.Requests.WsTrust
 {
     internal class WsTrustResponse
     {
+        public const string Saml1Assertion = "urn:oasis:names:tc:SAML:1.0:assertion";
+        private readonly XDocument _responseDocument;
+
+        private WsTrustResponse(string response)
+        {
+            _responseDocument = XDocument.Parse(response, LoadOptions.PreserveWhitespace);
+        }
+
         public SamlTokenInfo GetSamlAssertion(WsTrustEndpoint endpoint)
         {
-            throw new NotImplementedException();
+            var tokenResponseDictionary = new Dictionary<string, string>();
+
+            var t = XmlNamespace.Trust;
+            if (endpoint.Version == WsTrustVersion.WsTrust2005)
+            {
+                t = XmlNamespace.Trust2005;
+            }
+
+            bool parseResponse = true;
+            if (endpoint.Version == WsTrustVersion.WsTrust13)
+            {
+                var requestSecurityTokenResponseCollection = _responseDocument
+                                                             .Descendants(t + "RequestSecurityTokenResponseCollection")
+                                                             .FirstOrDefault();
+
+                if (requestSecurityTokenResponseCollection == null)
+                {
+                    parseResponse = false;
+                }
+            }
+
+            if (!parseResponse)
+            {
+                return null;
+            }
+
+            IEnumerable<XElement> tokenResponses = _responseDocument.Descendants(t + "RequestSecurityTokenResponse");
+            foreach (var tokenResponse in tokenResponses)
+            {
+                var tokenTypeElement = tokenResponse.Elements(t + "TokenType").FirstOrDefault();
+                if (tokenTypeElement == null)
+                {
+                    continue;
+                }
+
+                var requestedSecurityToken = tokenResponse.Elements(t + "RequestedSecurityToken").FirstOrDefault();
+                if (requestedSecurityToken == null)
+                {
+                    continue;
+                }
+
+                var token = new System.Text.StringBuilder();
+                foreach (var node in requestedSecurityToken.Nodes())
+                {
+                    // Since we moved from XDocument.Load(..., LoadOptions.None) to Load(..., LoadOptions.PreserveWhitespace),
+                    // requestedSecurityToken can contain multiple nodes, and the first node is possibly just whitespaces e.g. "\n   ",
+                    // so we concatenate all the sub-nodes to include everything
+                    token.Append(node.ToString(SaveOptions.DisableFormatting));
+                }
+
+                tokenResponseDictionary.Add(tokenTypeElement.Value, token.ToString());
+            }
+
+            if (tokenResponseDictionary.Count == 0)
+            {
+                return null;
+            }
+
+            string tokenTypeKey;
+            SamlAssertionType assertionType;
+
+            if (tokenResponseDictionary.ContainsKey(Saml1Assertion))
+            {
+                tokenTypeKey = Saml1Assertion;
+                assertionType = SamlAssertionType.SamlV1;
+            }
+            else
+            {
+                tokenTypeKey = tokenResponseDictionary.Keys.First();
+                assertionType = SamlAssertionType.SamlV2;
+            }
+
+            return new SamlTokenInfo(assertionType, tokenResponseDictionary[tokenTypeKey]);
         }
 
         public static WsTrustResponse Create(string response)
         {
-            throw new NotImplementedException();
+            return new WsTrustResponse(response);
         }
     }
 }

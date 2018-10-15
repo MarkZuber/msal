@@ -26,6 +26,8 @@
 // ------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Identity.Client.Logging;
 using Microsoft.Identity.Client.Requests;
 
@@ -46,10 +48,19 @@ namespace Microsoft.Identity.Client
         public AuthorizationType AuthorizationType { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
+
+        public string Authority
+        {
+            get { return AuthorityUri.ToString(); }
+            set { AuthorityUri = new Authority(value); }
+        }
         
-        internal Authority Authority { get; set; }
-        internal string TelemetryCorrelationId { get; set; }
+        internal Authority AuthorityUri { get; set; }
+        internal Guid TelemetryCorrelationId { get; set; }
         internal ILogger Logger { get; set; }
+        public string ClientId { get; set; }
+        public string RedirectUri { get; set; }
+        public IEnumerable<string> RequestedScopes => _requestedScopes.AsEnumerable();
 
         public AuthenticationParameters Clone()
         {
@@ -58,14 +69,15 @@ namespace Microsoft.Identity.Client
                 AuthorizationType = AuthorizationType,
                 UserName = UserName,
                 Password = Password,
-                Authority = Authority.Clone(),
+                AuthorityUri = AuthorityUri.Clone(),
                 TelemetryCorrelationId = TelemetryCorrelationId
             };
         }
 
+        private readonly HashSet<string> _requestedScopes = new HashSet<string>();
         internal void AddScope(string scope)
         {
-            throw new NotImplementedException();
+            _requestedScopes.Add(scope);
         }
     }
 }

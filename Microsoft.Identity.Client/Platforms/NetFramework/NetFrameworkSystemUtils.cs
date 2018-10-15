@@ -26,34 +26,79 @@
 // ------------------------------------------------------------------------------
 
 using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Identity.Client.Platform;
 
 namespace Microsoft.Identity.Client.Platforms.NetFramework
 {
     internal class NetFrameworkSystemUtils : ISystemUtils
     {
+        private readonly Lazy<string> _clientSku = new Lazy<string>(() => "client_sku");
+
+        // TODO: do the lazy init for all of these values since these will remain constant
+        // after first initialization.
+        private readonly Lazy<string> _operatingSystem =
+            new Lazy<string>(() => Environment.OSVersion.Platform.ToString());
+
+        private readonly Lazy<string> _osVersion = new Lazy<string>(() => Environment.OSVersion.Version.ToString());
+
+        private readonly Lazy<string> _productVersion =
+            new Lazy<string>(() => "1.2.3.4"); // TODO: get product version resource
+
         /// <inheritdoc />
         public string GetCurrentUsername()
         {
-            throw new NotImplementedException();
+            const int NameUserPrincipal = 8;
+            uint userNameSize = 0;
+            NetFrameworkNativeMethods.GetUserNameEx(NameUserPrincipal, null, ref userNameSize);
+            if (userNameSize == 0)
+            {
+                // todo: exception
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+                //throw CoreExceptionFactory.Instance.GetClientException(
+                //    CoreErrorCodes.GetUserNameFailed,
+                //    CoreErrorMessages.GetUserNameFailed,
+                //    new Win32Exception(Marshal.GetLastWin32Error()));
+            }
+
+            var sb = new StringBuilder((int)userNameSize);
+            if (!NetFrameworkNativeMethods.GetUserNameEx(NameUserPrincipal, sb, ref userNameSize))
+            {
+                // todo: exception
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+                //throw CoreExceptionFactory.Instance.GetClientException(
+                //    CoreErrorCodes.GetUserNameFailed,
+                //    CoreErrorMessages.GetUserNameFailed,
+                //    new Win32Exception(Marshal.GetLastWin32Error()));
+            }
+
+            return sb.ToString();
         }
 
         /// <inheritdoc />
         public string GetClientSku()
         {
-            throw new NotImplementedException();
+            return _clientSku.Value;
         }
 
         /// <inheritdoc />
         public string GetOsVersion()
         {
-            throw new NotImplementedException();
+            return _osVersion.Value;
         }
 
         /// <inheritdoc />
         public string GetProductVersion()
         {
-            throw new NotImplementedException();
+            return _productVersion.Value;
+        }
+
+        /// <inheritdoc />
+        public string GetOperatingSystem()
+        {
+            return _operatingSystem.Value;
         }
     }
 }

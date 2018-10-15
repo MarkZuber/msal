@@ -29,16 +29,11 @@ namespace Microsoft.Identity.Client.Telemetry
 {
     internal class TelemetryManager : ITelemetryManager
     {
-        private readonly object _lockObj = new object();
-        private TelemetryReceiver _receiver;
+        private readonly MsalClientConfiguration _msalClientConfiguration;
 
-        /// <inheritdoc />
-        public void SetTelemetryReceiver(TelemetryReceiver receiver)
+        public TelemetryManager(MsalClientConfiguration msalClientConfiguration)
         {
-            lock (_lockObj)
-            {
-                _receiver = receiver;
-            }
+            _msalClientConfiguration = msalClientConfiguration;
         }
     }
 }

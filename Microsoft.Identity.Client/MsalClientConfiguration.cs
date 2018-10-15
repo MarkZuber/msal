@@ -25,11 +25,83 @@
 // 
 // ------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using Microsoft.Identity.Client.Logging;
+
 namespace Microsoft.Identity.Client
 {
     public class MsalClientConfiguration
     {
-        public string LogFilePath { get; set; }
+        private readonly object _lockObj = new object();
+        private LogLevel _logLevel = LogLevel.Error;
+        private bool _isPiiLoggingEnabled = false;
+
+        public LogLevel LogLevel
+        {
+            get
+            {
+                lock (_lockObj)
+                {
+                    return _logLevel;
+                }
+            }
+            set
+            {
+                lock (_lockObj)
+                {
+                    _logLevel = value;
+                }
+            }
+        }
+
+        public bool IsPiiLoggingEnabled
+        {
+            get
+            {
+                lock (_lockObj)
+                {
+                    return _isPiiLoggingEnabled;
+                }
+            }
+            set
+            {
+                lock (_lockObj)
+                {
+                    _isPiiLoggingEnabled = value;
+                }
+            }
+        }
+
+        public event EventHandler<LoggerCallbackEventArgs> LoggerCallback;
+
+        internal void InvokeLoggerCallback(
+            object sender,
+            LoggerCallbackEventArgs e)
+        {
+            lock (_lockObj)
+            {
+                LoggerCallback?.Invoke(sender, e);
+            }
+        }
+
+        private TelemetryReceiver _receiver;
+        public void SetTelemetryReceiver(TelemetryReceiver receiver)
+        {
+            lock (_lockObj)
+            {
+                _receiver = receiver;
+            }
+        }
+
+        internal void InvokeTelemetryReceiver(List<Dictionary<string, string>> events)
+        {
+            lock (_lockObj)
+            {
+                _receiver?.Invoke(events);
+            }
+        }
+
         public string UserAgent { get; set; } = "Mozilla/5.0 (compatible; MSAL 1.0)";
         public int HttpTimeoutSeconds { get; set; } = 10;
     }

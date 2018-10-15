@@ -36,7 +36,9 @@ namespace Microsoft.Identity.Client.Requests
 
         public string HomeAccountId { get; set; }
         public string Environment { get; set; }
-
-
+        public string Secret { get; set; }
+        public DateTime ExpiresOn { get; set; }
+        public DateTime ExtendedExpiresOn { get; set; }
+        public string Target { get; set; }
     }
 }

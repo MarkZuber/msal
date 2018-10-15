@@ -26,16 +26,27 @@
 // ------------------------------------------------------------------------------
 
 using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Microsoft.Identity.Client.Http
 {
-    public class HttpClientFactory : IHttpClientFactory
+    internal class HttpClientFactory : IHttpClientFactory
     {
+        private const long MaxResponseContentBufferSizeInBytes = 1024 * 1024;
         private readonly HttpClient _httpClient;
 
         public HttpClientFactory()
         {
-            _httpClient = new HttpClient();
+            var httpMessageHandler = new HttpClientHandler
+            {
+                UseDefaultCredentials = true
+            };
+            _httpClient = new HttpClient(httpMessageHandler)
+            {
+                MaxResponseContentBufferSize = MaxResponseContentBufferSizeInBytes
+            };
+            _httpClient.DefaultRequestHeaders.Accept.Clear();
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         /// <inheritdoc />

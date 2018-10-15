@@ -29,6 +29,5 @@ namespace Microsoft.Identity.Client.Telemetry
 {
     internal interface ITelemetryManager
     {
-        void SetTelemetryReceiver(TelemetryReceiver receiver);
     }
 }

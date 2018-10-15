@@ -57,9 +57,9 @@ namespace Microsoft.Identity.Client.Platforms.NetFramework
         }
 
         /// <inheritdoc />
-        public ILogger CreateLogger(string telemetryCorrelationId)
+        public ILogger CreateLogger(Guid correlationId, MsalClientConfiguration msalClientConfiguration)
         {
-            return new NetFrameworkLogger(telemetryCorrelationId);
+            return new NetFrameworkLogger(GetSystemUtils(), correlationId, msalClientConfiguration);
         }
     }
 }

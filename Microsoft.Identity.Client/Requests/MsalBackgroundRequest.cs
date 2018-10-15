@@ -37,8 +37,8 @@ namespace Microsoft.Identity.Client.Requests
     {
         private readonly AuthenticationParameters _authParameters;
         private readonly CacheManager _cacheManager;
-        private readonly WebRequestManager _webRequestManager;
         private readonly ISystemUtils _systemUtils;
+        private readonly WebRequestManager _webRequestManager;
 
         public MsalBackgroundRequest(
             WebRequestManager webRequestManager,
@@ -92,12 +92,16 @@ namespace Microsoft.Identity.Client.Requests
             // todo: check for embedded browser result...
 
             string authCode = string.Empty;
-            return await _webRequestManager.GetAccessTokenFromAuthCodeAsync(authCode, cancellationToken).ConfigureAwait(false);
+            return await _webRequestManager.GetAccessTokenFromAuthCodeAsync(authCode, cancellationToken)
+                                           .ConfigureAwait(false);
         }
 
-        private async Task<TokenResponse> RefreshTokenExchangeAsync(string refreshToken, CancellationToken cancellationToken)
+        private async Task<TokenResponse> RefreshTokenExchangeAsync(
+            string refreshToken,
+            CancellationToken cancellationToken)
         {
-            return await _webRequestManager.GetAccessTokenFromRefreshTokenAsync(refreshToken, cancellationToken).ConfigureAwait(false);
+            return await _webRequestManager.GetAccessTokenFromRefreshTokenAsync(refreshToken, cancellationToken)
+                                           .ConfigureAwait(false);
         }
 
         private async Task<TokenResponse> UsernamePasswordExchangeAsync(CancellationToken cancellationToken)
@@ -107,23 +111,25 @@ namespace Microsoft.Identity.Client.Requests
             {
                 var mexDoc = await _webRequestManager.GetMexAsync(userRealm.FederationMetadataUrl, cancellationToken)
                                                      .ConfigureAwait(false);
-                var wsTrustResponse = await _webRequestManager
-                                            .GetWsTrustResponseAsync(
-                                                userRealm.CloudAudienceUrn,
-                                                mexDoc.GetWsTrustUsernamePasswordEndpoint(), cancellationToken).ConfigureAwait(false);
+                var wsTrustResponse = await _webRequestManager.GetWsTrustResponseAsync(
+                                          userRealm.CloudAudienceUrn,
+                                          mexDoc.GetWsTrustUsernamePasswordEndpoint(),
+                                          cancellationToken).ConfigureAwait(false);
                 var samlGrant = wsTrustResponse.GetSamlAssertion(mexDoc.GetWsTrustUsernamePasswordEndpoint());
                 return await _webRequestManager.GetAccessTokenFromSamlGrantAsync(samlGrant, cancellationToken)
                                                .ConfigureAwait(false);
             }
             else
             {
-                return await _webRequestManager.GetAccessTokenFromUsernamePasswordAsync(cancellationToken).ConfigureAwait(false);
+                return await _webRequestManager.GetAccessTokenFromUsernamePasswordAsync(cancellationToken)
+                                               .ConfigureAwait(false);
             }
         }
 
         private async Task<TokenResponse> WindowsIntegratedAuthExchangeAsync(CancellationToken cancellationToken)
         {
             // todo: throw if not on a windows system
+            // todo: even better, implement capabilities check system...
 
             string username = _systemUtils.GetCurrentUsername();
             if (string.IsNullOrWhiteSpace(username))
@@ -146,7 +152,8 @@ namespace Microsoft.Identity.Client.Requests
                                       mexDoc.GetWsTrustWindowsTransportEndpoint(),
                                       cancellationToken).ConfigureAwait(false);
             var samlGrant = wsTrustResponse.GetSamlAssertion(mexDoc.GetWsTrustWindowsTransportEndpoint());
-            return await _webRequestManager.GetAccessTokenFromSamlGrantAsync(samlGrant, cancellationToken).ConfigureAwait(false);
+            return await _webRequestManager.GetAccessTokenFromSamlGrantAsync(samlGrant, cancellationToken)
+                                           .ConfigureAwait(false);
         }
 
         private Task<TryReadCacheResponse> TryReadCacheAsync(CancellationToken cancellationToken)

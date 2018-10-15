@@ -29,7 +29,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Identity.Client.Logging;
 
 namespace Microsoft.Identity.Client
 {
@@ -46,9 +45,5 @@ namespace Microsoft.Identity.Client
         Task<AuthenticationResult> AcquireTokenSilentlyAsync(
             AuthenticationParameters authParameters,
             CancellationToken cancellationToken);
-
-        event EventHandler<LoggerCallbackEventArgs> LoggerCallback;
-
-        void SetTelemetryReceiver(TelemetryReceiver receiver);
     }
 }

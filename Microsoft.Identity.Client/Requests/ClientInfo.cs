@@ -26,52 +26,48 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using System.Globalization;
+using System.Runtime.Serialization;
 using Microsoft.Identity.Client.Core;
 
 namespace Microsoft.Identity.Client.Requests
 {
-    internal class Authority
+    internal class ClientInfoClaim
     {
-        private readonly Uri _authorityUri;
-        private readonly string _environment;
-        private readonly string _realm;
+        public const string UniqueIdentifier = "uid";
+        public const string UniqueTenantIdentifier = "utid";
+    }
 
-        public Authority(string authorityUri)
+    [DataContract]
+    internal class ClientInfo
+    {
+        [DataMember(Name = ClientInfoClaim.UniqueIdentifier, IsRequired = false)]
+        public string UniqueObjectIdentifier { get; set; }
+
+        [DataMember(Name = ClientInfoClaim.UniqueTenantIdentifier, IsRequired = false)]
+        public string UniqueTenantIdentifier { get; set; }
+
+        public static ClientInfo Create(string clientInfo)
         {
-            _authorityUri = new Uri(authorityUri);
-            _environment = _authorityUri.Host;
+            if (string.IsNullOrEmpty(clientInfo))
+            {
+                throw new ArgumentNullException(nameof(clientInfo));
+                //throw CoreExceptionFactory.Instance.GetClientException(
+                //    CoreErrorCodes.JsonParseError,
+                //    "client info is null");
+            }
 
-            // TODO: use the same regex as MSAL C++ to split the parts out?
-            _realm = GetFirstPathSegment(authorityUri);
-        }
-
-        public Authority Clone()
-        {
-            return new Authority(_authorityUri.ToString());
-        }
-
-        public Uri GetUserRealmEndpoint(string username)
-        {
-            return new Uri(string.Format(
-                CultureInfo.InvariantCulture,
-                "https://{0}/common/UserRealm/{1}?api-version=1.0",
-                _environment,
-                EncodingUtils.UrlEncode(username)));
-        }
-
-        public Uri GetTokenEndpoint()
-        {
-            return new Uri(string.Format(
-                CultureInfo.InvariantCulture,
-                "https://{0}/{1}/oauth2/v2.0/token",
-                _environment,
-                _realm));
-        }
-
-        private static string GetFirstPathSegment(string authority)
-        {
-            return new Uri(authority).Segments[1].TrimEnd('/');
+            try
+            {
+                return JsonHelper.DeserializeFromJson<ClientInfo>(EncodingUtils.Base64UrlDecodeUnpadded(clientInfo));
+            }
+            catch (Exception exc)
+            {
+                throw;
+                //throw CoreExceptionFactory.Instance.GetClientException(
+                //    CoreErrorCodes.JsonParseError,
+                //    "Failed to parse the returned client info.",
+                //    exc);
+            }
         }
     }
 }

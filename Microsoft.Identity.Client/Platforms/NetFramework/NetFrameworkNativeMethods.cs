@@ -25,30 +25,18 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
+using System.Runtime.InteropServices;
+using System.Text;
 
-namespace Microsoft.Identity.Client.Core
+namespace Microsoft.Identity.Client.Platforms.NetFramework
 {
-    internal static class QueryParameterBuilderExtensions
+    internal static class NetFrameworkNativeMethods
     {
-        public static void AddRedirectUriQueryParam(this QueryParameterBuilder builder)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static void AddClientIdQueryParam(this QueryParameterBuilder builder)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static void AddScopeQueryParam(this QueryParameterBuilder builder)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static void AddClientInfoQueryParam(this QueryParameterBuilder builder)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport("secur32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool GetUserNameEx(
+            int nameFormat,
+            StringBuilder userName,
+            ref uint userNameSize);
     }
 }

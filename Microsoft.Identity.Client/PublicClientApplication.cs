@@ -32,7 +32,6 @@ using Microsoft.Identity.Client.Browser;
 using Microsoft.Identity.Client.Cache;
 using Microsoft.Identity.Client.Core;
 using Microsoft.Identity.Client.Http;
-using Microsoft.Identity.Client.Logging;
 using Microsoft.Identity.Client.Platform;
 using Microsoft.Identity.Client.Requests;
 using Microsoft.Identity.Client.Telemetry;
@@ -48,6 +47,7 @@ namespace Microsoft.Identity.Client
         private readonly IPlatformProxy _platformProxy;
         private readonly IStorageManager _storageManager;
         private readonly ITelemetryManager _telemetryManager;
+        private readonly MsalClientConfiguration _msalClientConfiguration;
 
         public PublicClientApplication(MsalClientConfiguration msalClientConfiguration)
             : this(
@@ -76,8 +76,9 @@ namespace Microsoft.Identity.Client
             _storageManager = storageManager ?? _platformProxy.CreateStorageManager();
             _browserFactory = browserFactory ?? _platformProxy.CreateBrowserFactory();
             _guidService = guidService ?? new GuidService();
-            _telemetryManager = telemetryManager ?? new TelemetryManager();
+            _telemetryManager = telemetryManager ?? new TelemetryManager(msalClientConfiguration);
             _environmentMetadata = environmentMetadata ?? new EnvironmentMetadata();
+            _msalClientConfiguration = msalClientConfiguration;
         }
 
         /// <inheritdoc />
@@ -106,24 +107,14 @@ namespace Microsoft.Identity.Client
             return await request.ExecuteAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        /// <inheritdoc />
-        public event EventHandler<LoggerCallbackEventArgs> LoggerCallback;
-
-        /// <inheritdoc />
-        public void SetTelemetryReceiver(TelemetryReceiver receiver)
-        {
-            _telemetryManager.SetTelemetryReceiver(receiver);
-        }
-
         private IMsalRequest CreateRequest(
             AuthenticationParameters authParameters,
             bool isInteractive)
         {
             var authParams = authParameters.Clone();
 
-            authParams.TelemetryCorrelationId = _guidService.NewGuid().ToString("D");
-            authParams.Logger = _platformProxy.CreateLogger(authParams.TelemetryCorrelationId);
-            authParams.Logger.LoggerCallback += OnLoggerCallback;
+            authParams.TelemetryCorrelationId = _guidService.NewGuid();
+            authParams.Logger = _platformProxy.CreateLogger(authParams.TelemetryCorrelationId, _msalClientConfiguration);
 
             var webRequestManager = new WebRequestManager(
                 _httpManager,
@@ -144,13 +135,6 @@ namespace Microsoft.Identity.Client
                     _platformProxy.GetSystemUtils(),
                     authParams);
             }
-        }
-
-        private void OnLoggerCallback(
-            object sender,
-            LoggerCallbackEventArgs e)
-        {
-            LoggerCallback?.Invoke(sender, e);
         }
     }
 }

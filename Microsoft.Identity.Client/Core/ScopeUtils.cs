@@ -25,25 +25,40 @@
 // 
 // ------------------------------------------------------------------------------
 
-namespace Microsoft.Identity.Client.Requests.WsTrust
-{
-    public enum SamlAssertionType
-    {
-        SamlV1,
-        SamlV2
-    }
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-    internal class SamlTokenInfo
+namespace Microsoft.Identity.Client.Core
+{
+    public static class ScopeUtils
     {
-        internal SamlTokenInfo(
-            SamlAssertionType assertionType,
-            string assertion)
+        public static string Join(IEnumerable<string> scopes)
         {
-            AssertionType = assertionType;
-            Assertion = assertion;
+            if (scopes == null)
+            {
+                return string.Empty;
+            }
+
+            var set = new HashSet<string>(scopes);
+            return string.Join(" ", set);
         }
 
-        public SamlAssertionType AssertionType { get; }
-        public string Assertion { get; }
+        public static IEnumerable<string> Split(string scopeString)
+        {
+            return SplitToSet(scopeString).AsEnumerable();
+        }
+
+        public static HashSet<string> SplitToSet(string scopeString)
+        {
+            string[] split = scopeString.Split(
+                new[]
+                {
+                    ' '
+                },
+                StringSplitOptions.RemoveEmptyEntries);
+            var set = new HashSet<string>(split, StringComparer.OrdinalIgnoreCase);
+            return set;
+        }
     }
 }

@@ -33,5 +33,6 @@ namespace Microsoft.Identity.Client.Platform
         string GetClientSku();
         string GetOsVersion();
         string GetProductVersion();
+        string GetOperatingSystem();
     }
 }

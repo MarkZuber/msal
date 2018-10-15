@@ -25,25 +25,16 @@
 // 
 // ------------------------------------------------------------------------------
 
-namespace Microsoft.Identity.Client.Requests.WsTrust
+using System;
+
+namespace Microsoft.Identity.Client.Core
 {
-    public enum SamlAssertionType
+    public class TimeService : ITimeService
     {
-        SamlV1,
-        SamlV2
-    }
-
-    internal class SamlTokenInfo
-    {
-        internal SamlTokenInfo(
-            SamlAssertionType assertionType,
-            string assertion)
+        /// <inheritdoc />
+        public DateTime GetUtcNow()
         {
-            AssertionType = assertionType;
-            Assertion = assertion;
+            return DateTime.UtcNow;
         }
-
-        public SamlAssertionType AssertionType { get; }
-        public string Assertion { get; }
     }
 }

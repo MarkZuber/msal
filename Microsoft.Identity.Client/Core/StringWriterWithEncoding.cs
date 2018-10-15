@@ -25,25 +25,18 @@
 // 
 // ------------------------------------------------------------------------------
 
-namespace Microsoft.Identity.Client.Requests.WsTrust
-{
-    public enum SamlAssertionType
-    {
-        SamlV1,
-        SamlV2
-    }
+using System.IO;
+using System.Text;
 
-    internal class SamlTokenInfo
+namespace Microsoft.Identity.Client.Core
+{
+    internal class StringWriterWithEncoding : StringWriter
     {
-        internal SamlTokenInfo(
-            SamlAssertionType assertionType,
-            string assertion)
+        public StringWriterWithEncoding(Encoding encoding)
         {
-            AssertionType = assertionType;
-            Assertion = assertion;
+            Encoding = encoding;
         }
 
-        public SamlAssertionType AssertionType { get; }
-        public string Assertion { get; }
+        public override Encoding Encoding { get; }
     }
 }
