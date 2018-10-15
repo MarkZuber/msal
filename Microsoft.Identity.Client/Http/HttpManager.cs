@@ -64,7 +64,7 @@ namespace Microsoft.Identity.Client.Http
         public async Task<HttpManagerResponse> PostAsync(
             Uri uri,
             IDictionary<string, string> requestHeaders,
-            string body,
+            HttpContent body,
             CancellationToken cancellationToken)
         {
             return await SendHttpRequestWithRetryAsync(
@@ -78,9 +78,8 @@ namespace Microsoft.Identity.Client.Http
         private async Task<HttpManagerResponse> SendHttpRequestWithRetryAsync(
             HttpMethod httpMethod,
             Uri uri,
-            IDictionary<string, string>
-                requestHeaders,
-            string body,
+            IDictionary<string, string> requestHeaders,
+            HttpContent body,
             CancellationToken cancellationToken)
         {
             HttpManagerResponse httpManagerResponse = null;
@@ -92,7 +91,7 @@ namespace Microsoft.Identity.Client.Http
                                               httpMethod,
                                               uri,
                                               requestHeaders,
-                                              body == null ? null : new StringContent(body),
+                                              body,
                                               cancellationToken).ConfigureAwait(false);
                 }).ConfigureAwait(false);
 

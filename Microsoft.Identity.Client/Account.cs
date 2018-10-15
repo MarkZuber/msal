@@ -27,7 +27,14 @@
 
 namespace Microsoft.Identity.Client
 {
-    public class Account
+    public class Account : IAccount
     {
+        public string Username { get; }
+
+        /// <inheritdoc />
+        public string Environment { get; }
+
+        /// <inheritdoc />
+        public AccountId HomeAccountId { get; }
     }
 }

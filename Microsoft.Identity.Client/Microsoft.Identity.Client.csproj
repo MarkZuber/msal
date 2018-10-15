@@ -4,6 +4,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;DESKTOP;WINDOWS_APP</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DESKTOP;WINDOWS_APP</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Folder Include="Platforms\NetCore\" />
     <Folder Include="Platforms\Ios\" />

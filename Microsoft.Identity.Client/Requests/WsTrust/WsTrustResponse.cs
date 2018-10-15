@@ -27,6 +27,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Identity.Client.Core;
 
@@ -119,9 +121,56 @@ namespace Microsoft.Identity.Client.Requests.WsTrust
             return new SamlTokenInfo(assertionType, tokenResponseDictionary[tokenTypeKey]);
         }
 
-        public static WsTrustResponse Create(string response)
+        public static WsTrustResponse Create(
+            HttpStatusCode httpStatusCode,
+            string response)
         {
-            return new WsTrustResponse(response);
+            try
+            {
+                var responseDocument = XDocument.Parse(response, LoadOptions.PreserveWhitespace);
+                if (httpStatusCode != HttpStatusCode.OK)
+                {
+                    // todo: exception...
+                    throw new MsalServiceException(
+                        CoreErrorMessages.FederatedServiceReturnedErrorTemplate,
+                        ReadErrorResponse(responseDocument));
+                }
+
+                return new WsTrustResponse(response);
+            }
+            catch (XmlException)
+            {
+                throw new MsalServiceException(CoreErrorMessages.FederatedServiceReturnedErrorTemplate, response);
+            }
+        }
+
+        private static string ReadErrorResponse(XDocument responseDocument)
+        {
+            string errorMessage = null;
+            var body = responseDocument.Descendants(XmlNamespace.SoapEnvelope + "Body").FirstOrDefault();
+            var fault = body?.Elements(XmlNamespace.SoapEnvelope + "Fault").FirstOrDefault();
+            if (fault != null)
+            {
+                errorMessage = GetFaultMessage(fault);
+            }
+
+            return errorMessage;
+        }
+
+        private static string GetFaultMessage(XElement fault)
+        {
+            var reason = fault.Elements(XmlNamespace.SoapEnvelope + "Reason").FirstOrDefault();
+            var text = reason?.Elements(XmlNamespace.SoapEnvelope + "Text").FirstOrDefault();
+            if (text == null)
+            {
+                return null;
+            }
+
+            using (var reader = text.CreateReader())
+            {
+                reader.MoveToContent();
+                return reader.ReadInnerXml();
+            }
         }
     }
 }

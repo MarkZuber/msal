@@ -67,6 +67,12 @@ namespace Microsoft.Identity.Client.Requests
                 string.Format(CultureInfo.InvariantCulture, "https://{0}/{1}/oauth2/v2.0/token", _environment, _realm));
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return _authorityUri.ToString();
+        }
+
         private static string GetFirstPathSegment(string authority)
         {
             return new Uri(authority).Segments[1].TrimEnd('/');

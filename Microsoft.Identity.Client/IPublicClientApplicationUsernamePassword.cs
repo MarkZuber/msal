@@ -26,25 +26,32 @@
 // ------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Identity.Client
 {
-    public delegate void TelemetryReceiver(List<Dictionary<string, string>> events);
-
-    public partial interface IPublicClientApplication
+    /// <summary>
+    ///     Interface to be used with desktop or mobile applications (Desktop / UWP / Xamarin.iOS / Xamarin.Android).
+    ///     public client applications are not trusted to safely keep application secrets, and therefore they only access Web
+    ///     APIs in the name of the user only
+    ///     (they only support public client flows). For details see https://aka.ms/msal-net-client-applications
+    /// </summary>
+    public partial interface IPublicClientApplication : IClientApplicationBase
     {
-        Task<AuthenticationResult> SignInAsync(
-            AuthenticationParameters authParameters,
-            CancellationToken cancellationToken);
-
-        Task<AuthenticationResult> AcquireTokenInteractivelyAsync(
-            AuthenticationParameters authParameters,
-            CancellationToken cancellationToken);
-
-        Task<AuthenticationResult> AcquireTokenSilentlyAsync(
-            AuthenticationParameters authParameters,
-            CancellationToken cancellationToken);
+        /// <summary>
+        ///     Non-interactive request to acquire a security token from the authority, via Username/Password Authentication.
+        ///     See https://aka.ms/msal-net-up.
+        /// </summary>
+        /// <param name="scopes">Scopes requested to access a protected API</param>
+        /// <param name="username">
+        ///     Identifier of the user application requests token on behalf.
+        ///     Generally in UserPrincipalName (UPN) format, e.g. john.doe@contoso.com
+        /// </param>
+        /// <param name="securePassword">User password.</param>
+        /// <returns>Authentication result containing a token for the requested scopes and account</returns>
+        Task<AuthenticationResult> AcquireTokenByUsernamePasswordAsync(
+            IEnumerable<string> scopes,
+            string username,
+            System.Security.SecureString securePassword);
     }
 }

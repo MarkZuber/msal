@@ -28,6 +28,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client.Core;
@@ -145,13 +147,15 @@ namespace Microsoft.Identity.Client.Requests
             var requestHeaders = new Dictionary<string, string>
             {
                 ["SOAPAction"] = soapAction,
-                ["Content-Type"] = "application/soap+xml; charset=utf-8"
+                ["ContentType"] = "application/soap+xml"
             };
+            
+            HttpContent body = new StringContent(wsTrustRequestMessage, Encoding.UTF8, requestHeaders["ContentType"]);
 
             var response = await _httpManager
-                                 .PostAsync(endpoint.Uri, requestHeaders, wsTrustRequestMessage, cancellationToken)
+                                 .PostAsync(endpoint.Uri, requestHeaders, body, cancellationToken)
                                  .ConfigureAwait(false);
-            return WsTrustResponse.Create(response.ResponseData);
+            return WsTrustResponse.Create(response.StatusCode, response.ResponseData);
         }
 
         public async Task<TokenResponse> GetAccessTokenFromSamlGrantAsync(
@@ -180,12 +184,12 @@ namespace Microsoft.Identity.Client.Requests
             AddClientInfoQueryParam(queryParams);
 
             IDictionary<string, string> headers = GetVersionHeaders();
-            headers["Content-Type"] = "application/x-www-form-urlencoded";
+            headers["ContentType"] = "application/x-www-form-urlencoded";
 
             var response = await _httpManager.PostAsync(
                                _authenticationParameters.AuthorityUri.GetTokenEndpoint(),
                                headers,
-                               queryParams.ToString(),
+                               new StringContent(queryParams.ToString()),
                                cancellationToken).ConfigureAwait(false);
 
             return TokenResponse.Create(response.ResponseData);
@@ -203,7 +207,7 @@ namespace Microsoft.Identity.Client.Requests
             var response = await _httpManager.PostAsync(
                                _authenticationParameters.AuthorityUri.GetTokenEndpoint(),
                                GetVersionHeaders(),
-                               queryParams.ToString(),
+                               new StringContent(queryParams.ToString()),
                                cancellationToken).ConfigureAwait(false);
             return TokenResponse.Create(response.ResponseData);
         }
@@ -222,7 +226,7 @@ namespace Microsoft.Identity.Client.Requests
             var response = await _httpManager.PostAsync(
                                _authenticationParameters.AuthorityUri.GetTokenEndpoint(),
                                GetVersionHeaders(),
-                               queryParams.ToString(),
+                               new StringContent(queryParams.ToString()),
                                cancellationToken).ConfigureAwait(false);
             return TokenResponse.Create(response.ResponseData);
         }
@@ -240,7 +244,7 @@ namespace Microsoft.Identity.Client.Requests
             var response = await _httpManager.PostAsync(
                                _authenticationParameters.AuthorityUri.GetTokenEndpoint(),
                                GetVersionHeaders(),
-                               queryParams.ToString(),
+                               new StringContent(queryParams.ToString()),
                                cancellationToken).ConfigureAwait(false);
             return TokenResponse.Create(response.ResponseData);
         }

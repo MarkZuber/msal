@@ -103,5 +103,8 @@ namespace Microsoft.Identity.Client
                 _receiver?.Invoke(events);
             }
         }
+
+        public string DefaultClientId { get; set; }
+        public string DefaultAuthority { get; set; }
     }
 }

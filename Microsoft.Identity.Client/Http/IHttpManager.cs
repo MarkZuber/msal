@@ -27,6 +27,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,7 +43,7 @@ namespace Microsoft.Identity.Client.Http
         Task<HttpManagerResponse> PostAsync(
             Uri uri,
             IDictionary<string, string> requestHeaders,
-            string body,
+            HttpContent body,
             CancellationToken cancellationToken);
     }
 }

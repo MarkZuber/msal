@@ -56,7 +56,7 @@ namespace Microsoft.Identity.Client.Requests
         public string DomainName { get; set; }
 
         [DataMember(Name = "cloud_instance_name")]
-        public string CloudInstanceName { get; }
+        public string CloudInstanceName { get; set; }
 
         public bool IsFederated => string.Compare(AccountType, "Federated", StringComparison.OrdinalIgnoreCase) == 0;
 

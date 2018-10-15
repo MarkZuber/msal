@@ -29,15 +29,7 @@ using System;
 
 namespace Microsoft.Identity.Client.Logging
 {
-    public enum LogLevel
-    {
-        Error,
-        Warning,
-        Info,
-        Verbose
-    }
-
-    public interface ILogger
+    internal interface ILogger
     {
         Guid CorrelationId { get; set; }
         bool PiiLoggingEnabled { get; }

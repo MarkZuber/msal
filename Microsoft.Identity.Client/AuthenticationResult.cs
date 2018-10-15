@@ -67,6 +67,7 @@ namespace Microsoft.Identity.Client
         public DateTime ExpiresOn { get; }
         public IEnumerable<string> Scopes { get; }
         public IEnumerable<string> DeclinedScopes => throw new NotImplementedException();
+        public string TenantId { get; } // todo: where does this come from?
 
         internal static AuthenticationResult Create(
             TokenResponse response,

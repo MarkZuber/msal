@@ -37,7 +37,7 @@ using Microsoft.Identity.Client.Telemetry;
 
 namespace Microsoft.Identity.Client
 {
-    public class PublicClientApplication : IPublicClientApplication
+    public sealed partial class PublicClientApplication : IPublicClientApplication
     {
         private readonly IBrowserFactory _browserFactory;
         private readonly EnvironmentMetadata _environmentMetadata;
@@ -47,6 +47,28 @@ namespace Microsoft.Identity.Client
         private readonly IPlatformProxy _platformProxy;
         private readonly IStorageManager _storageManager;
         private readonly ITelemetryManager _telemetryManager;
+
+        public PublicClientApplication(string clientId)
+            : this(
+                new MsalClientConfiguration()
+                {
+                    DefaultClientId = clientId,
+                    DefaultAuthority = "https://login.microsoftonline.com/common/"
+                })
+        {
+        }
+
+        public PublicClientApplication(
+            string clientId,
+            string authority)
+            : this(
+                new MsalClientConfiguration()
+                {
+                    DefaultClientId = clientId,
+                    DefaultAuthority = authority
+                })
+        {
+        }
 
         public PublicClientApplication(MsalClientConfiguration msalClientConfiguration)
             : this(
@@ -111,6 +133,17 @@ namespace Microsoft.Identity.Client
             bool isInteractive)
         {
             var authParams = authParameters.Clone();
+
+            // "hack" to work around default constructors in legacy scenarios...
+            if (string.IsNullOrWhiteSpace(authParams.ClientId))
+            {
+                authParams.ClientId = _msalClientConfiguration.DefaultClientId;
+            }
+
+            if (string.IsNullOrWhiteSpace(authParams.Authority))
+            {
+                authParams.Authority = _msalClientConfiguration.DefaultAuthority;
+            }
 
             authParams.TelemetryCorrelationId = _guidService.NewGuid();
             authParams.Logger = _platformProxy.CreateLogger(

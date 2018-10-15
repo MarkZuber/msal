@@ -52,7 +52,7 @@ namespace Microsoft.Identity.Client
 
         public string Authority
         {
-            get => AuthorityUri.ToString();
+            get => AuthorityUri?.ToString();
             set => AuthorityUri = new Authority(value);
         }
 
@@ -70,7 +70,7 @@ namespace Microsoft.Identity.Client
                 AuthorizationType = AuthorizationType,
                 UserName = UserName,
                 Password = Password,
-                AuthorityUri = AuthorityUri.Clone(),
+                AuthorityUri = AuthorityUri?.Clone(),
                 TelemetryCorrelationId = TelemetryCorrelationId
             };
         }
@@ -78,6 +78,14 @@ namespace Microsoft.Identity.Client
         internal void AddScope(string scope)
         {
             _requestedScopes.Add(scope);
+        }
+
+        public void AddScopes(IEnumerable<string> scopes)
+        {
+            foreach (string scope in scopes)
+            {
+                AddScope(scope);
+            }
         }
     }
 }
