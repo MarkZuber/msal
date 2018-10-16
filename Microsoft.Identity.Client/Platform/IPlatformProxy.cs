@@ -37,6 +37,7 @@ namespace Microsoft.Identity.Client.Platform
         ISystemUtils GetSystemUtils();
         IStorageManager CreateStorageManager();
         IBrowserFactory CreateBrowserFactory();
+        ICryptographyUtils GetCryptographyUtils();
 
         ILogger CreateLogger(
             Guid telemetryCorrelationId,

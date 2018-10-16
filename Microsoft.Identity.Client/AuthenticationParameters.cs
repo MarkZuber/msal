@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Identity.Client.Logging;
 using Microsoft.Identity.Client.Requests;
 
@@ -62,20 +63,25 @@ namespace Microsoft.Identity.Client
         public string ClientId { get; set; }
         public string RedirectUri { get; set; }
         public IEnumerable<string> RequestedScopes => _requestedScopes.AsEnumerable();
+        public X509Certificate2 Certificate { get; set; }
 
         public AuthenticationParameters Clone()
         {
-            return new AuthenticationParameters()
+            var ap = new AuthenticationParameters()
             {
                 AuthorizationType = AuthorizationType,
                 UserName = UserName,
                 Password = Password,
                 AuthorityUri = AuthorityUri?.Clone(),
-                TelemetryCorrelationId = TelemetryCorrelationId
+                TelemetryCorrelationId = TelemetryCorrelationId,
+                Certificate = Certificate,
+                ClientId = ClientId
             };
+            ap.AddScopes(RequestedScopes);
+            return ap;
         }
 
-        internal void AddScope(string scope)
+        public void AddScope(string scope)
         {
             _requestedScopes.Add(scope);
         }

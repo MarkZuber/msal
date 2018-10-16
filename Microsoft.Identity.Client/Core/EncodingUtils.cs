@@ -31,7 +31,7 @@ using System.Text;
 
 namespace Microsoft.Identity.Client.Core
 {
-    public static class EncodingUtils
+    internal static class EncodingUtils
     {
         private const char Base64PadCharacter = '=';
         private const char Base64Character62 = '+';
@@ -62,7 +62,7 @@ namespace Microsoft.Identity.Client.Core
             return Encoding.UTF8.GetString(decoded, 0, decoded.Length);
         }
 
-        private static string Encode(byte[] input)
+        public static string Encode(byte[] input)
         {
             if (input == null)
             {

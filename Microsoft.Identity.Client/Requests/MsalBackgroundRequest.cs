@@ -77,6 +77,9 @@ namespace Microsoft.Identity.Client.Requests
             case AuthorizationType.WindowsIntegratedAuth:
                 tokenResponse = await WindowsIntegratedAuthExchangeAsync(cancellationToken).ConfigureAwait(false);
                 break;
+            case AuthorizationType.Certificate:
+                tokenResponse = await CertificateExchangeAsync(cancellationToken).ConfigureAwait(false);
+                break;            
             case AuthorizationType.None:
                 throw new InvalidOperationException("msal background request called with None type");
             default:
@@ -85,6 +88,13 @@ namespace Microsoft.Identity.Client.Requests
 
             var account = await _cacheManager.CacheTokenResponseAsync(tokenResponse).ConfigureAwait(false);
             return AuthenticationResult.Create(tokenResponse, account);
+        }
+
+        private async Task<TokenResponse> CertificateExchangeAsync(CancellationToken cancellationToken)
+        {
+            return await _webRequestManager
+                         .GetAccessTokenWithCertificateAsync(_authParameters.Certificate, cancellationToken)
+                         .ConfigureAwait(false);
         }
 
         private async Task<TokenResponse> AuthCodeExchangeAsync(CancellationToken cancellationToken)

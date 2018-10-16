@@ -27,6 +27,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Runtime.Serialization;
 using Microsoft.Identity.Client.Core;
 
@@ -62,15 +63,15 @@ namespace Microsoft.Identity.Client.Requests
 
             AccessToken = mtr.AccessToken;
             RefreshToken = mtr.RefreshToken;
-            IdToken = new IdToken(mtr.IdToken);
+            IdToken = string.IsNullOrWhiteSpace(mtr.IdToken) ? null : new IdToken(mtr.IdToken);
             Scopes = ScopeUtils.Split(mtr.Scope);
-            var clientInfo = ClientInfo.Create(EncodingUtils.Base64UrlDecodeUnpadded(mtr.ClientInfo));
+            ClientInfo clientInfo = string.IsNullOrWhiteSpace(mtr.ClientInfo) ? null : ClientInfo.Create(mtr.ClientInfo);
 
             ExpiresOn = timeSvc.GetUtcNow().AddSeconds(mtr.ExpiresIn);
             ExtendedExpiresOn = timeSvc.GetUtcNow().AddSeconds(mtr.ExtendedExpiresIn);
 
-            Uid = clientInfo.UniqueObjectIdentifier;
-            Utid = clientInfo.UniqueTenantIdentifier;
+            Uid = clientInfo?.UniqueObjectIdentifier;
+            Utid = clientInfo?.UniqueTenantIdentifier;
         }
 
         public string AccessToken { get; }
@@ -84,16 +85,14 @@ namespace Microsoft.Identity.Client.Requests
         public bool HasAccessToken => !string.IsNullOrWhiteSpace(AccessToken);
         public bool HasRefreshToken => !string.IsNullOrWhiteSpace(RefreshToken);
 
-        public static TokenResponse Create(string response)
+        public static TokenResponse Create(HttpStatusCode httpStatusCode, string response)
         {
             var mtr = JsonHelper.DeserializeFromJson<MsalTokenResponse>(response);
-            if (!string.IsNullOrWhiteSpace(mtr.Error))
+
+            if (httpStatusCode != HttpStatusCode.OK || !string.IsNullOrWhiteSpace(mtr.Error))
             {
-                //MSAL_ERROR("Received an error from AAD");
-                //MSAL_ERROR("AAD error code '%s'", error);
-                //MSAL_ERROR("AAD error description '%s'", JsonUtils::GetExistingOrEmptyString(j, "error_description"));
-                //MSAL_ERROR("AAD correlation id '%s'", JsonUtils::GetExistingOrEmptyString(j, "correlation_id"));
-                //ThrowAadErrorAsMsal(error);
+                // todo: exception
+                throw new MsalException(mtr.Error, response);
             }
 
             if (string.IsNullOrWhiteSpace(mtr.AccessToken))

@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -149,12 +150,11 @@ namespace Microsoft.Identity.Client.Requests
                 ["SOAPAction"] = soapAction,
                 ["ContentType"] = "application/soap+xml"
             };
-            
+
             HttpContent body = new StringContent(wsTrustRequestMessage, Encoding.UTF8, requestHeaders["ContentType"]);
 
-            var response = await _httpManager
-                                 .PostAsync(endpoint.Uri, requestHeaders, body, cancellationToken)
-                                 .ConfigureAwait(false);
+            var response = await _httpManager.PostAsync(endpoint.Uri, requestHeaders, body, cancellationToken)
+                                             .ConfigureAwait(false);
             return WsTrustResponse.Create(response.StatusCode, response.ResponseData);
         }
 
@@ -177,8 +177,7 @@ namespace Microsoft.Identity.Client.Requests
                 throw new InvalidOperationException(); // (MsalXmlException, MSAL_SAML_ENUM_UNKNOWN_VERSION);
             }
 
-            queryParams.AddQueryPair("assertion", _authenticationParameters.UserName);
-            queryParams.AddQueryPair("password", EncodingUtils.Base64RfcEncodePadded(samlGrant.Assertion));
+            queryParams.AddQueryPair("assertion", EncodingUtils.Base64RfcEncodePadded(samlGrant.Assertion));
             AddClientIdQueryParam(queryParams);
             AddScopeQueryParam(queryParams);
             AddClientInfoQueryParam(queryParams);
@@ -186,13 +185,7 @@ namespace Microsoft.Identity.Client.Requests
             IDictionary<string, string> headers = GetVersionHeaders();
             headers["ContentType"] = "application/x-www-form-urlencoded";
 
-            var response = await _httpManager.PostAsync(
-                               _authenticationParameters.AuthorityUri.GetTokenEndpoint(),
-                               headers,
-                               new StringContent(queryParams.ToString()),
-                               cancellationToken).ConfigureAwait(false);
-
-            return TokenResponse.Create(response.ResponseData);
+            return await GetAccessTokenAsync(queryParams, cancellationToken);
         }
 
         public async Task<TokenResponse> GetAccessTokenFromUsernamePasswordAsync(CancellationToken cancellationToken)
@@ -204,12 +197,7 @@ namespace Microsoft.Identity.Client.Requests
             AddScopeQueryParam(queryParams);
             AddClientInfoQueryParam(queryParams);
 
-            var response = await _httpManager.PostAsync(
-                               _authenticationParameters.AuthorityUri.GetTokenEndpoint(),
-                               GetVersionHeaders(),
-                               new StringContent(queryParams.ToString()),
-                               cancellationToken).ConfigureAwait(false);
-            return TokenResponse.Create(response.ResponseData);
+            return await GetAccessTokenAsync(queryParams, cancellationToken);
         }
 
         public async Task<TokenResponse> GetAccessTokenFromAuthCodeAsync(
@@ -223,12 +211,7 @@ namespace Microsoft.Identity.Client.Requests
             AddScopeQueryParam(queryParams);
             AddClientInfoQueryParam(queryParams);
 
-            var response = await _httpManager.PostAsync(
-                               _authenticationParameters.AuthorityUri.GetTokenEndpoint(),
-                               GetVersionHeaders(),
-                               new StringContent(queryParams.ToString()),
-                               cancellationToken).ConfigureAwait(false);
-            return TokenResponse.Create(response.ResponseData);
+            return await GetAccessTokenAsync(queryParams, cancellationToken);
         }
 
         public async Task<TokenResponse> GetAccessTokenFromRefreshTokenAsync(
@@ -241,12 +224,43 @@ namespace Microsoft.Identity.Client.Requests
             AddScopeQueryParam(queryParams);
             AddClientInfoQueryParam(queryParams);
 
+            return await GetAccessTokenAsync(queryParams, cancellationToken);
+        }
+
+        public async Task<TokenResponse> GetAccessTokenWithCertificateAsync(
+            X509Certificate2 certificate,
+            CancellationToken cancellationToken)
+        {
+            var queryParams = new QueryParameterBuilder("grant_type", "client_credentials");
+            queryParams.AddQueryPair("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer");
+            queryParams.AddQueryPair("client_assertion", GetClientCertificateAssertionForAudience(certificate));
+            AddScopeQueryParam(queryParams);
+            AddClientIdQueryParam(queryParams);
+            AddClientInfoQueryParam(queryParams);
+
+            return await GetAccessTokenAsync(queryParams, cancellationToken);
+        }
+
+        private string GetClientCertificateAssertionForAudience(X509Certificate2 certificate)
+        {
+            var jwt = new JsonWebToken(
+                _authenticationParameters.ClientId,
+                _authenticationParameters.AuthorityUri.GetTokenEndpoint().ToString());
+
+            // todo: do we need to pass through "send certificate" boolean from AuthParameters?
+            return jwt.Sign(new ClientAssertionCertificate(certificate), true);
+        }
+
+        private async Task<TokenResponse> GetAccessTokenAsync(
+            QueryParameterBuilder queryParams,
+            CancellationToken cancellationToken)
+        {
             var response = await _httpManager.PostAsync(
                                _authenticationParameters.AuthorityUri.GetTokenEndpoint(),
                                GetVersionHeaders(),
-                               new StringContent(queryParams.ToString()),
+                               queryParams.ToHttpContent(),
                                cancellationToken).ConfigureAwait(false);
-            return TokenResponse.Create(response.ResponseData);
+            return TokenResponse.Create(response.StatusCode, response.ResponseData);
         }
 
         private void AddRedirectUriQueryParam(QueryParameterBuilder builder)

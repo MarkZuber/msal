@@ -25,42 +25,21 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.Identity.Client.Requests;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Identity.Client.TestInfrastructure.Labs;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Identity.Client.Cache
+namespace Microsoft.Identity.Client.TestInfrastructure
 {
-    internal class CacheManager : ICacheManager
+    public class AuthHelper
     {
-        private readonly AuthenticationParameters _authenticationParameters;
-        private readonly IStorageManager _storageManager;
-
-        public CacheManager(
-            IStorageManager storageManager,
-            AuthenticationParameters authenticationParameters)
+        public ILabUser GetUser(UserQueryParameters query)
         {
-            _storageManager = storageManager;
-            _authenticationParameters = authenticationParameters;
-        }
-
-        /// <inheritdoc />
-        public Task<TryReadCacheResponse> TryReadCache()
-        {
-            return Task.FromResult(new TryReadCacheResponse(false, null, null));
-        }
-
-        /// <inheritdoc />
-        public Task<Account> CacheTokenResponseAsync(TokenResponse tokenResponse)
-        {
-            var acct = new Account(tokenResponse.IdToken?.UserName);
-            return Task.FromResult<Account>(acct);
-        }
-
-        /// <inheritdoc />
-        public Task DeleteCachedRefreshTokenAsync()
-        {
-            return Task.FromResult(0);
+            ILabService labService = new LabService();
+            IEnumerable<ILabUser> availableUsers = labService.GetUsers(query).ToList();
+            Assert.AreNotEqual(0, availableUsers.Count(), "Found no users for the given query.");
+            return availableUsers.First();
         }
     }
 }

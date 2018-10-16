@@ -25,42 +25,38 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.Identity.Client.Requests;
-
-namespace Microsoft.Identity.Client.Cache
+namespace Microsoft.Identity.Client.TestInfrastructure.Labs
 {
-    internal class CacheManager : ICacheManager
+    public enum KeyVaultAuthenticationType
     {
-        private readonly AuthenticationParameters _authenticationParameters;
-        private readonly IStorageManager _storageManager;
+        ClientCertificate,
+        UserCredential
+    }
 
-        public CacheManager(
-            IStorageManager storageManager,
-            AuthenticationParameters authenticationParameters)
-        {
-            _storageManager = storageManager;
-            _authenticationParameters = authenticationParameters;
-        }
+    public class KeyVaultConfiguration
+    {
+        /// <summary>
+        ///     The URL of the Key Vault instance.
+        /// </summary>
+        public string Url { get; set; }
 
-        /// <inheritdoc />
-        public Task<TryReadCacheResponse> TryReadCache()
-        {
-            return Task.FromResult(new TryReadCacheResponse(false, null, null));
-        }
+        /// <summary>
+        ///     The authentication type to use to communicate with the Key Vault.
+        /// </summary>
+        public KeyVaultAuthenticationType AuthType { get; set; }
 
-        /// <inheritdoc />
-        public Task<Account> CacheTokenResponseAsync(TokenResponse tokenResponse)
-        {
-            var acct = new Account(tokenResponse.IdToken?.UserName);
-            return Task.FromResult<Account>(acct);
-        }
+        /// <summary>
+        ///     The ID of the test harness client.
+        /// </summary>
+        /// <remarks>
+        ///     This should be configured as having access to the Key Vault instance specified at <see cref="Url" />.
+        /// </remarks>
+        public string ClientId { get; set; }
 
-        /// <inheritdoc />
-        public Task DeleteCachedRefreshTokenAsync()
-        {
-            return Task.FromResult(0);
-        }
+        /// <summary>
+        ///     The thumbprint of the <see cref="System.Security.Cryptography.X509Certificates.X509Certificate2" /> to use when
+        ///     <see cref="AuthType" /> is <see cref="KeyVaultAuthenticationType.ClientCertificate" />.
+        /// </summary>
+        public string CertThumbprint { get; set; }
     }
 }

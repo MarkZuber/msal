@@ -25,42 +25,11 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.Identity.Client.Requests;
+using System.Runtime.CompilerServices;
 
-namespace Microsoft.Identity.Client.Cache
-{
-    internal class CacheManager : ICacheManager
-    {
-        private readonly AuthenticationParameters _authenticationParameters;
-        private readonly IStorageManager _storageManager;
-
-        public CacheManager(
-            IStorageManager storageManager,
-            AuthenticationParameters authenticationParameters)
-        {
-            _storageManager = storageManager;
-            _authenticationParameters = authenticationParameters;
-        }
-
-        /// <inheritdoc />
-        public Task<TryReadCacheResponse> TryReadCache()
-        {
-            return Task.FromResult(new TryReadCacheResponse(false, null, null));
-        }
-
-        /// <inheritdoc />
-        public Task<Account> CacheTokenResponseAsync(TokenResponse tokenResponse)
-        {
-            var acct = new Account(tokenResponse.IdToken?.UserName);
-            return Task.FromResult<Account>(acct);
-        }
-
-        /// <inheritdoc />
-        public Task DeleteCachedRefreshTokenAsync()
-        {
-            return Task.FromResult(0);
-        }
-    }
-}
+[assembly:
+    InternalsVisibleTo(
+        "Microsoft.Identity.Client.TestInfrastructure, PublicKey=0024000004800000940000000602000000240000525341310004000001000100B5FC90E7027F67871E773A8FDE8938C81DD402BA65B9201D60593E96C492651E889CC13F1415EBB53FAC1131AE0BD333C5EE6021672D9718EA31A8AEBD0DA0072F25D87DBA6FC90FFD598ED4DA35E44C398C454307E8E33B8426143DAEC9F596836F97C8F74750E5975C64E2189F45DEF46B2A2B1247ADC3652BF5C308055DA9")]
+[assembly:
+    InternalsVisibleTo(
+        "Microsoft.Identity.Client.UnitTests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100B5FC90E7027F67871E773A8FDE8938C81DD402BA65B9201D60593E96C492651E889CC13F1415EBB53FAC1131AE0BD333C5EE6021672D9718EA31A8AEBD0DA0072F25D87DBA6FC90FFD598ED4DA35E44C398C454307E8E33B8426143DAEC9F596836F97C8F74750E5975C64E2189F45DEF46B2A2B1247ADC3652BF5C308055DA9")]

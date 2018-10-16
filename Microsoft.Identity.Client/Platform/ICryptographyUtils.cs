@@ -25,42 +25,14 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.Identity.Client.Requests;
+using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Identity.Client.Cache
+namespace Microsoft.Identity.Client.Platform
 {
-    internal class CacheManager : ICacheManager
+    internal interface ICryptographyUtils
     {
-        private readonly AuthenticationParameters _authenticationParameters;
-        private readonly IStorageManager _storageManager;
-
-        public CacheManager(
-            IStorageManager storageManager,
-            AuthenticationParameters authenticationParameters)
-        {
-            _storageManager = storageManager;
-            _authenticationParameters = authenticationParameters;
-        }
-
-        /// <inheritdoc />
-        public Task<TryReadCacheResponse> TryReadCache()
-        {
-            return Task.FromResult(new TryReadCacheResponse(false, null, null));
-        }
-
-        /// <inheritdoc />
-        public Task<Account> CacheTokenResponseAsync(TokenResponse tokenResponse)
-        {
-            var acct = new Account(tokenResponse.IdToken?.UserName);
-            return Task.FromResult<Account>(acct);
-        }
-
-        /// <inheritdoc />
-        public Task DeleteCachedRefreshTokenAsync()
-        {
-            return Task.FromResult(0);
-        }
+        byte[] SignWithCertificate(
+            string message,
+            X509Certificate2 certificate);
     }
 }

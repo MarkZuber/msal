@@ -25,13 +25,14 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System.Text;
+using System.Collections.Generic;
+using System.Net.Http;
 
 namespace Microsoft.Identity.Client.Core
 {
     internal sealed class QueryParameterBuilder
     {
-        private readonly StringBuilder _sb = new StringBuilder();
+        private readonly Dictionary<string, string> _dict = new Dictionary<string, string>();
 
         public QueryParameterBuilder(
             string initialKey,
@@ -44,13 +45,12 @@ namespace Microsoft.Identity.Client.Core
             string key,
             string value)
         {
-            _sb.AppendFormat("{0}={1}", key, value);
+            _dict[key] = value;
         }
 
-        /// <inheritdoc />
-        public override string ToString()
+        public HttpContent ToHttpContent()
         {
-            return _sb.ToString();
+            return new FormUrlEncodedContent(_dict);
         }
     }
 }

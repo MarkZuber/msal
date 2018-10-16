@@ -29,6 +29,11 @@ namespace Microsoft.Identity.Client
 {
     public class Account : IAccount
     {
+        public Account(string userName)
+        {
+            Username = userName;
+        }
+
         public string Username { get; }
 
         /// <inheritdoc />

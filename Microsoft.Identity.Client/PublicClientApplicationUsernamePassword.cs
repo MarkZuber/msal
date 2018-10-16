@@ -27,6 +27,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,11 +56,24 @@ namespace Microsoft.Identity.Client
             {
                 AuthorizationType = AuthorizationType.UsernamePassword,
                 UserName = username,
-                Password = securePassword.ToString()
+                Password = SecureStringToNonSecure(securePassword)
             };
             authParameters.AddScopes(scopes);
 
             return await AcquireTokenSilentlyAsync(authParameters, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private string SecureStringToNonSecure(SecureString secureString)
+        {
+            var output = new char[secureString.Length];
+            IntPtr secureStringPtr = Marshal.SecureStringToCoTaskMemUnicode(secureString);
+            for (int i = 0; i < secureString.Length; i++)
+            {
+                output[i] = (char) Marshal.ReadInt16(secureStringPtr, i*2);
+            }
+
+            Marshal.ZeroFreeCoTaskMemUnicode(secureStringPtr);
+            return new string(output);
         }
 
         //private async Task<AuthenticationResult> AcquireTokenByUsernamePasswordAsync(IEnumerable<string> scopes, UsernamePasswordInput usernamePasswordInput)

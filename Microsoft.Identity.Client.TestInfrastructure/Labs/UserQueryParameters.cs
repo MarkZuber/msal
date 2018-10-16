@@ -25,42 +25,35 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.Identity.Client.Requests;
+using System.Collections.Generic;
 
-namespace Microsoft.Identity.Client.Cache
+namespace Microsoft.Identity.Client.TestInfrastructure.Labs
 {
-    internal class CacheManager : ICacheManager
+    public enum UserType
     {
-        private readonly AuthenticationParameters _authenticationParameters;
-        private readonly IStorageManager _storageManager;
+        Member = 0,
+        Guest = 1
+    }
 
-        public CacheManager(
-            IStorageManager storageManager,
-            AuthenticationParameters authenticationParameters)
-        {
-            _storageManager = storageManager;
-            _authenticationParameters = authenticationParameters;
-        }
+    public enum FederationProvider
+    {
+        Unknown = 0,
+        None = 1,
+        AdfsV2 = 2,
+        AdfsV3 = 3,
+        AdfsV4 = 4,
+        PingFederateV83 = 5,
+        Shibboleth = 6
+    }
 
-        /// <inheritdoc />
-        public Task<TryReadCacheResponse> TryReadCache()
-        {
-            return Task.FromResult(new TryReadCacheResponse(false, null, null));
-        }
-
-        /// <inheritdoc />
-        public Task<Account> CacheTokenResponseAsync(TokenResponse tokenResponse)
-        {
-            var acct = new Account(tokenResponse.IdToken?.UserName);
-            return Task.FromResult<Account>(acct);
-        }
-
-        /// <inheritdoc />
-        public Task DeleteCachedRefreshTokenAsync()
-        {
-            return Task.FromResult(0);
-        }
+    public class UserQueryParameters
+    {
+        public FederationProvider? FederationProvider { get; set; }
+        public bool? IsMamUser { get; set; }
+        public bool? IsMfaUser { get; set; }
+        public ISet<string> Licenses { get; set; }
+        public bool? IsFederatedUser { get; set; }
+        public UserType? IsUserType { get; set; }
+        public bool? IsExternalUser { get; set; }
     }
 }

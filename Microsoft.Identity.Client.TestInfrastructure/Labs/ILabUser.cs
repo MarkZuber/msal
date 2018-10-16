@@ -26,41 +26,26 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using System.Threading.Tasks;
-using Microsoft.Identity.Client.Requests;
+using System.Collections.Generic;
 
-namespace Microsoft.Identity.Client.Cache
+namespace Microsoft.Identity.Client.TestInfrastructure.Labs
 {
-    internal class CacheManager : ICacheManager
+    public interface ILabUser
     {
-        private readonly AuthenticationParameters _authenticationParameters;
-        private readonly IStorageManager _storageManager;
+        Guid ObjectId { get; }
+        UserType UserType { get; }
+        string Upn { get; }
+        string CredentialUrl { get; }
+        ILabUser HomeUser { get; }
+        bool IsExternal { get; }
+        bool IsMfa { get; }
+        bool IsMam { get; }
+        ISet<string> Licenses { get; }
+        bool IsFederated { get; }
+        FederationProvider FederationProvider { get; }
+        string CurrentTenantId { get; }
+        string HomeTenantId { get; }
 
-        public CacheManager(
-            IStorageManager storageManager,
-            AuthenticationParameters authenticationParameters)
-        {
-            _storageManager = storageManager;
-            _authenticationParameters = authenticationParameters;
-        }
-
-        /// <inheritdoc />
-        public Task<TryReadCacheResponse> TryReadCache()
-        {
-            return Task.FromResult(new TryReadCacheResponse(false, null, null));
-        }
-
-        /// <inheritdoc />
-        public Task<Account> CacheTokenResponseAsync(TokenResponse tokenResponse)
-        {
-            var acct = new Account(tokenResponse.IdToken?.UserName);
-            return Task.FromResult<Account>(acct);
-        }
-
-        /// <inheritdoc />
-        public Task DeleteCachedRefreshTokenAsync()
-        {
-            return Task.FromResult(0);
-        }
+        string GetPassword();
     }
 }

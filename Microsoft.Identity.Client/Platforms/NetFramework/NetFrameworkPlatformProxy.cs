@@ -37,6 +37,7 @@ namespace Microsoft.Identity.Client.Platforms.NetFramework
     {
         private readonly IBrowserFactory _browserFactory = new NetFrameworkBrowserFactory();
         private readonly ISystemUtils _systemUtils = new NetFrameworkSystemUtils();
+        private readonly ICryptographyUtils _cryptographyUtils = new NetFrameworkCryptographyUtils();
 
         /// <inheritdoc />
         public ISystemUtils GetSystemUtils()
@@ -54,6 +55,12 @@ namespace Microsoft.Identity.Client.Platforms.NetFramework
         public IBrowserFactory CreateBrowserFactory()
         {
             return _browserFactory;
+        }
+
+        /// <inheritdoc />
+        public ICryptographyUtils GetCryptographyUtils()
+        {
+            return _cryptographyUtils;
         }
 
         /// <inheritdoc />

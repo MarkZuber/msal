@@ -51,6 +51,11 @@ namespace Microsoft.Identity.Client.Core
 
         public static HashSet<string> SplitToSet(string scopeString)
         {
+            if (string.IsNullOrWhiteSpace(scopeString))
+            {
+                return new HashSet<string>();
+            }
+
             string[] split = scopeString.Split(
                 new[]
                 {
