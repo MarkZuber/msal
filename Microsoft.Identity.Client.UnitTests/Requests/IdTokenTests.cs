@@ -25,8 +25,20 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System.Runtime.CompilerServices;
+using Microsoft.Identity.Client.Requests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// TODO: get the proper public keys in place from test signing.
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.TestInfrastructure")]
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.UnitTests")]
+namespace Microsoft.Identity.Client.UnitTests.Requests
+{
+    [TestClass]
+    public class IdTokenTests
+    {
+        [TestMethod]
+        public void TestCreate()
+        {
+            // TODO: change to IdToken.Create() for consistency...?
+            var idToken = new IdToken(null);
+            Assert.Fail();
+        }
+    }
+}

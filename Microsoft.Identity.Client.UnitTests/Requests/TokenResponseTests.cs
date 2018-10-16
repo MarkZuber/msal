@@ -25,8 +25,20 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System.Runtime.CompilerServices;
+using System.Net;
+using Microsoft.Identity.Client.Requests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// TODO: get the proper public keys in place from test signing.
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.TestInfrastructure")]
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.UnitTests")]
+namespace Microsoft.Identity.Client.UnitTests.Requests
+{
+    [TestClass]
+    public class TokenResponseTests
+    {
+        [TestMethod]
+        public void TestCreate_OK_Null()
+        {
+            var response = TokenResponse.Create(HttpStatusCode.OK, null);
+            Assert.Fail();
+        }
+    }
+}

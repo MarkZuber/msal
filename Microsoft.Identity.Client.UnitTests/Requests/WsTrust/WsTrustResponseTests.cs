@@ -25,8 +25,20 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System.Runtime.CompilerServices;
+using System.Net;
+using Microsoft.Identity.Client.Requests.WsTrust;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// TODO: get the proper public keys in place from test signing.
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.TestInfrastructure")]
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.UnitTests")]
+namespace Microsoft.Identity.Client.UnitTests.Requests.WsTrust
+{
+    [TestClass]
+    public class WsTrustResponseTests
+    {
+        [TestMethod]
+        public void TestConstructor_OK_NullResponse()
+        {
+            var response = WsTrustResponse.Create(HttpStatusCode.OK, null);
+            Assert.Fail();
+        }
+    }
+}

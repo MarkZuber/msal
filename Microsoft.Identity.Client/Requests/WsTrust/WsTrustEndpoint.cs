@@ -41,9 +41,9 @@ namespace Microsoft.Identity.Client.Requests.WsTrust
 
     internal class WsTrustEndpoint
     {
-        private const string envelopeNamespaceValue = "http://www.w3.org/2003/05/soap-envelope";
+        private const string EnvelopeNamespaceValue = "http://www.w3.org/2003/05/soap-envelope";
 
-        private const string wsuNamespaceValue =
+        private const string WsuNamespaceValue =
             "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd";
 
         private readonly IGuidService _guidService;
@@ -107,7 +107,7 @@ namespace Microsoft.Identity.Client.Requests.WsTrust
                 requestType = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Issue";
             }
 
-            const string wsaNamespaceValue = "http://www.w3.org/2005/08/addressing";
+            const string WsaNamespaceValue = "http://www.w3.org/2005/08/addressing";
 
             using (var sw = new StringWriterWithEncoding(Encoding.UTF8))
             {
@@ -120,28 +120,28 @@ namespace Microsoft.Identity.Client.Requests.WsTrust
                         CloseOutput = false
                     }))
                 {
-                    writer.WriteStartElement("s", "Envelope", envelopeNamespaceValue);
-                    writer.WriteAttributeString("wsa", "http://www.w3.org/2000/xmlns/", wsaNamespaceValue);
-                    writer.WriteAttributeString("wsu", "http://www.w3.org/2000/xmlns/", wsuNamespaceValue);
+                    writer.WriteStartElement("s", "Envelope", EnvelopeNamespaceValue);
+                    writer.WriteAttributeString("wsa", "http://www.w3.org/2000/xmlns/", WsaNamespaceValue);
+                    writer.WriteAttributeString("wsu", "http://www.w3.org/2000/xmlns/", WsuNamespaceValue);
 
-                    writer.WriteStartElement("Header", envelopeNamespaceValue);
-                    writer.WriteStartElement("Action", wsaNamespaceValue);
-                    writer.WriteAttributeString("mustUnderstand", envelopeNamespaceValue, "1");
+                    writer.WriteStartElement("Header", EnvelopeNamespaceValue);
+                    writer.WriteStartElement("Action", WsaNamespaceValue);
+                    writer.WriteAttributeString("mustUnderstand", EnvelopeNamespaceValue, "1");
                     writer.WriteString(soapAction);
                     writer.WriteEndElement(); // Action
 
-                    writer.WriteStartElement("messageID", wsaNamespaceValue);
-                    writer.WriteString($"urn:uuid:{_guidService.NewGuid().ToString("D")}");
+                    writer.WriteStartElement("messageID", WsaNamespaceValue);
+                    writer.WriteString($"urn:uuid:{_guidService.NewGuid():D}");
                     writer.WriteEndElement(); // messageID
 
-                    writer.WriteStartElement("ReplyTo", wsaNamespaceValue);
-                    writer.WriteStartElement("Address", wsaNamespaceValue);
+                    writer.WriteStartElement("ReplyTo", WsaNamespaceValue);
+                    writer.WriteStartElement("Address", WsaNamespaceValue);
                     writer.WriteString("http://www.w3.org/2005/08/addressing/anonymous");
                     writer.WriteEndElement(); // Address
                     writer.WriteEndElement(); // ReplyTo
 
-                    writer.WriteStartElement("To", wsaNamespaceValue);
-                    writer.WriteAttributeString("mustUnderstand", envelopeNamespaceValue, "1");
+                    writer.WriteStartElement("To", WsaNamespaceValue);
+                    writer.WriteAttributeString("mustUnderstand", EnvelopeNamespaceValue, "1");
                     writer.WriteString(Uri.ToString());
                     writer.WriteEndElement(); // To
 
@@ -152,11 +152,11 @@ namespace Microsoft.Identity.Client.Requests.WsTrust
 
                     writer.WriteEndElement(); // Header
 
-                    writer.WriteStartElement("Body", envelopeNamespaceValue);
+                    writer.WriteStartElement("Body", EnvelopeNamespaceValue);
                     writer.WriteStartElement("wst", "RequestSecurityToken", trustNamespace);
                     writer.WriteStartElement("wsp", "AppliesTo", "http://schemas.xmlsoap.org/ws/2004/09/policy");
-                    writer.WriteStartElement("EndpointReference", wsaNamespaceValue);
-                    writer.WriteStartElement("Address", wsaNamespaceValue);
+                    writer.WriteStartElement("EndpointReference", WsaNamespaceValue);
+                    writer.WriteStartElement("Address", WsaNamespaceValue);
                     writer.WriteString(cloudAudienceUri);
                     writer.WriteEndElement(); // Address
                     writer.WriteEndElement(); // EndpointReference
@@ -185,7 +185,7 @@ namespace Microsoft.Identity.Client.Requests.WsTrust
             string username,
             string password)
         {
-            const string wsseNamespaceValue =
+            const string WsseNamespaceValue =
                 "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd";
 
             var createdTime = _timeService.GetUtcNow();
@@ -196,24 +196,24 @@ namespace Microsoft.Identity.Client.Requests.WsTrust
             string expiryTimeString = BuildTimeString(expiryTime);
 
             string versionString = Version == WsTrustVersion.WsTrust2005 ? "UnPwSecTok2005-" : "UnPwSecTok13-";
-            string trustId = $"{versionString}{_guidService.NewGuid().ToString("D")}";
+            string trustId = $"{versionString}{_guidService.NewGuid():D}";
 
-            writer.WriteStartElement("wsse", "Security", wsseNamespaceValue);
-            writer.WriteAttributeString("mustUnderstand", envelopeNamespaceValue, "1");
+            writer.WriteStartElement("wsse", "Security", WsseNamespaceValue);
+            writer.WriteAttributeString("mustUnderstand", EnvelopeNamespaceValue, "1");
 
-            writer.WriteStartElement("Timestamp", wsuNamespaceValue);
-            writer.WriteAttributeString("Id", wsuNamespaceValue, "MSATimeStamp");
+            writer.WriteStartElement("Timestamp", WsuNamespaceValue);
+            writer.WriteAttributeString("Id", WsuNamespaceValue, "MSATimeStamp");
 
-            writer.WriteElementString("Created", wsuNamespaceValue, createdTimeString);
-            writer.WriteElementString("Expires", wsuNamespaceValue, expiryTimeString);
+            writer.WriteElementString("Created", WsuNamespaceValue, createdTimeString);
+            writer.WriteElementString("Expires", WsuNamespaceValue, expiryTimeString);
 
             writer.WriteEndElement(); // Timestamp
 
-            writer.WriteStartElement("UsernameToken", wsseNamespaceValue);
-            writer.WriteAttributeString("Id", wsuNamespaceValue, trustId);
+            writer.WriteStartElement("UsernameToken", WsseNamespaceValue);
+            writer.WriteAttributeString("Id", WsuNamespaceValue, trustId);
 
-            writer.WriteElementString("Username", wsseNamespaceValue, username);
-            writer.WriteElementString("Password", wsseNamespaceValue, password);
+            writer.WriteElementString("Username", WsseNamespaceValue, username);
+            writer.WriteElementString("Password", WsseNamespaceValue, password);
 
             writer.WriteEndElement(); // UsernameToken
 

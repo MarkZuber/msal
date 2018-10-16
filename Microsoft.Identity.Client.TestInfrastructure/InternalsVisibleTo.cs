@@ -28,5 +28,4 @@
 using System.Runtime.CompilerServices;
 
 // TODO: get the proper public keys in place from test signing.
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.TestInfrastructure")]
 [assembly: InternalsVisibleTo("Microsoft.Identity.Client.UnitTests")]

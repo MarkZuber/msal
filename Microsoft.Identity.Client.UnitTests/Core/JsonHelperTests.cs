@@ -25,49 +25,53 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
 using System.Runtime.Serialization;
 using Microsoft.Identity.Client.Core;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.UnitTests.Core
 {
-    internal class ClientInfoClaim
+    [TestClass]
+    public class JsonHelperTests
     {
-        public const string UniqueIdentifier = "uid";
-        public const string UniqueTenantIdentifier = "utid";
-    }
-
-    [DataContract]
-    internal class ClientInfo
-    {
-        [DataMember(Name = ClientInfoClaim.UniqueIdentifier, IsRequired = false)]
-        public string UniqueObjectIdentifier { get; set; }
-
-        [DataMember(Name = ClientInfoClaim.UniqueTenantIdentifier, IsRequired = false)]
-        public string UniqueTenantIdentifier { get; set; }
-
-        public static ClientInfo Create(string clientInfo)
+        [TestMethod]
+        public void TestSerializeToJson()
         {
-            if (string.IsNullOrEmpty(clientInfo))
+            var data = new TestDataStruct
             {
-                throw new ArgumentNullException(nameof(clientInfo));
-                //throw CoreExceptionFactory.Instance.GetClientException(
-                //    CoreErrorCodes.JsonParseError,
-                //    "client info is null");
-            }
+                SomeValue = "hello there",
+                SomeIntValue = 24789
+            };
 
-            try
-            {
-                return JsonHelper.DeserializeFromJson<ClientInfo>(EncodingUtils.Base64UrlDecodeUnpadded(clientInfo));
-            }
-            catch (Exception)
-            {
-                throw;
-                //throw CoreExceptionFactory.Instance.GetClientException(
-                //    CoreErrorCodes.JsonParseError,
-                //    "Failed to parse the returned client info.",
-                //    exc);
-            }
+            string json = JsonHelper.SerializeToJson(data);
+            Assert.AreEqual(
+                "{\"some_int_value\":24789,\"some_missing_value\":null,\"some_value\":\"hello there\"}",
+                json);
+        }
+
+        [TestMethod]
+        public void TestDeserializeFromJson()
+        {
+            string json = "{\"some_int_value\":24789,\"some_value\":\"hello there\"}";
+            var data = JsonHelper.DeserializeFromJson<TestDataStruct>(json);
+
+            Assert.IsNotNull(data);
+            Assert.AreEqual("hello there", data.SomeValue);
+            Assert.AreEqual(24789, data.SomeIntValue);
+            Assert.IsNull(data.MissingValue);
+        }
+
+        [DataContract]
+        public class TestDataStruct
+        {
+            [DataMember(Name = "some_value")]
+            public string SomeValue { get; set; }
+
+            [DataMember(Name = "some_int_value")]
+            public int SomeIntValue { get; set; }
+
+            [DataMember(Name = "some_missing_value")]
+            public string MissingValue { get; set; }
         }
     }
 }

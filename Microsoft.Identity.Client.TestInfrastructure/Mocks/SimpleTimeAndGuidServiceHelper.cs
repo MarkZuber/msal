@@ -26,48 +26,32 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using System.Runtime.Serialization;
 using Microsoft.Identity.Client.Core;
+using NSubstitute;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.TestInfrastructure.Mocks
 {
-    internal class ClientInfoClaim
+    internal class SimpleTimeAndGuidServiceHelper
     {
-        public const string UniqueIdentifier = "uid";
-        public const string UniqueTenantIdentifier = "utid";
-    }
+        public DateTime ExpectedDateTime = new DateTime(
+            2018,
+            10,
+            15,
+            8,
+            15,
+            30);
 
-    [DataContract]
-    internal class ClientInfo
-    {
-        [DataMember(Name = ClientInfoClaim.UniqueIdentifier, IsRequired = false)]
-        public string UniqueObjectIdentifier { get; set; }
-
-        [DataMember(Name = ClientInfoClaim.UniqueTenantIdentifier, IsRequired = false)]
-        public string UniqueTenantIdentifier { get; set; }
-
-        public static ClientInfo Create(string clientInfo)
+        public SimpleTimeAndGuidServiceHelper()
         {
-            if (string.IsNullOrEmpty(clientInfo))
-            {
-                throw new ArgumentNullException(nameof(clientInfo));
-                //throw CoreExceptionFactory.Instance.GetClientException(
-                //    CoreErrorCodes.JsonParseError,
-                //    "client info is null");
-            }
-
-            try
-            {
-                return JsonHelper.DeserializeFromJson<ClientInfo>(EncodingUtils.Base64UrlDecodeUnpadded(clientInfo));
-            }
-            catch (Exception)
-            {
-                throw;
-                //throw CoreExceptionFactory.Instance.GetClientException(
-                //    CoreErrorCodes.JsonParseError,
-                //    "Failed to parse the returned client info.",
-                //    exc);
-            }
+            ExpectedGuid = Guid.NewGuid();
+            TimeService = Substitute.For<ITimeService>();
+            TimeService.GetUtcNow().Returns(ExpectedDateTime);
+            GuidService = Substitute.For<IGuidService>();
+            GuidService.NewGuid().Returns(ExpectedGuid);
         }
+
+        public ITimeService TimeService { get; }
+        public IGuidService GuidService { get; }
+        public Guid ExpectedGuid { get; }
     }
 }

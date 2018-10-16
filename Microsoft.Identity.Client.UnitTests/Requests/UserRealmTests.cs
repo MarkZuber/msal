@@ -25,8 +25,20 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System.Runtime.CompilerServices;
+using Microsoft.Identity.Client.Requests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// TODO: get the proper public keys in place from test signing.
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.TestInfrastructure")]
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.UnitTests")]
+namespace Microsoft.Identity.Client.UnitTests.Requests
+{
+    [TestClass]
+    public class UserRealmTests
+    {
+        [TestMethod]
+        public void TestCreate_Null()
+        {
+            // todo: send in http status code so we can consolidate error validation
+            var userRealm = UserRealm.Create(null);
+            Assert.Fail();
+        }
+    }
+}

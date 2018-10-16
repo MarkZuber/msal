@@ -25,49 +25,44 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System;
-using System.Runtime.Serialization;
+using System.Collections.Generic;
 using Microsoft.Identity.Client.Core;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Identity.Client.Requests
+namespace Microsoft.Identity.Client.UnitTests.Core
 {
-    internal class ClientInfoClaim
+    [TestClass]
+    public class DictionaryExtensionsTests
     {
-        public const string UniqueIdentifier = "uid";
-        public const string UniqueTenantIdentifier = "utid";
-    }
-
-    [DataContract]
-    internal class ClientInfo
-    {
-        [DataMember(Name = ClientInfoClaim.UniqueIdentifier, IsRequired = false)]
-        public string UniqueObjectIdentifier { get; set; }
-
-        [DataMember(Name = ClientInfoClaim.UniqueTenantIdentifier, IsRequired = false)]
-        public string UniqueTenantIdentifier { get; set; }
-
-        public static ClientInfo Create(string clientInfo)
+        [TestMethod]
+        public void TestCopyDictionarySuccess()
         {
-            if (string.IsNullOrEmpty(clientInfo))
+            var dict = new Dictionary<string, string>
             {
-                throw new ArgumentNullException(nameof(clientInfo));
-                //throw CoreExceptionFactory.Instance.GetClientException(
-                //    CoreErrorCodes.JsonParseError,
-                //    "client info is null");
-            }
+                ["1"] = "12345",
+                ["2"] = "23456",
+                ["abcde"] = "fghij"
+            };
 
-            try
+            IDictionary<string, string> dict2 = dict.CopyDictionary();
+            Assert.AreNotSame(dict2, dict);
+            Assert.AreEqual(dict.Count, dict2.Count);
+
+            foreach (KeyValuePair<string, string> kvp in dict)
             {
-                return JsonHelper.DeserializeFromJson<ClientInfo>(EncodingUtils.Base64UrlDecodeUnpadded(clientInfo));
+                Assert.IsTrue(dict2.ContainsKey(kvp.Key));
+                Assert.AreEqual(dict[kvp.Key], dict2[kvp.Key]);
             }
-            catch (Exception)
-            {
-                throw;
-                //throw CoreExceptionFactory.Instance.GetClientException(
-                //    CoreErrorCodes.JsonParseError,
-                //    "Failed to parse the returned client info.",
-                //    exc);
-            }
+        }
+
+        [TestMethod]
+        public void TestCopyEmptyDictionary()
+        {
+            var dict = new Dictionary<string, string>();
+            IDictionary<string, string> dict2 = dict.CopyDictionary();
+
+            Assert.AreNotSame(dict2, dict);
+            Assert.AreEqual(0, dict2.Count);
         }
     }
 }

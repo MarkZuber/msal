@@ -116,7 +116,7 @@ namespace Microsoft.Identity.Client.Requests
                 throw new Exception("Mex Error");
             }
 
-            return WsTrustMexDocument.Create(response.ResponseData);
+            return WsTrustMexDocument.Create(response.StatusCode, response.ResponseData);
         }
 
         public async Task<WsTrustResponse> GetWsTrustResponseAsync(

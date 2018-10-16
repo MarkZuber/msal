@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Xml.Linq;
 using Microsoft.Identity.Client.Core;
 
@@ -43,21 +44,27 @@ namespace Microsoft.Identity.Client.Requests.WsTrust
         private readonly Dictionary<string, MexPolicy> _policies = new Dictionary<string, MexPolicy>();
         private readonly ITimeService _timeService;
 
-        internal WsTrustMexDocument(string response)
+        private WsTrustMexDocument(
+            string response,
+            ITimeService timeService,
+            IGuidService guidService)
         {
             var mexDocument = XDocument.Parse(response, LoadOptions.None);
             ReadPolicies(mexDocument);
             ReadPolicyBindings(mexDocument);
             SetPolicyEndpointAddresses(mexDocument);
 
-            // TODO: inject
-            _guidService = new GuidService();
-            _timeService = new TimeService();
+            _guidService = guidService ?? new GuidService();
+            _timeService = timeService ?? new TimeService();
         }
 
-        public static WsTrustMexDocument Create(string response)
+        public static WsTrustMexDocument Create(
+            HttpStatusCode httpStatusCode,
+            string response,
+            ITimeService timeService = null,
+            IGuidService guidService = null)
         {
-            return new WsTrustMexDocument(response);
+            return new WsTrustMexDocument(response, timeService, guidService);
         }
 
         public WsTrustEndpoint GetWsTrustUsernamePasswordEndpoint()

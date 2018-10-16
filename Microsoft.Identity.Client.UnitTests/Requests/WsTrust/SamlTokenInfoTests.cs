@@ -25,8 +25,28 @@
 // 
 // ------------------------------------------------------------------------------
 
-using System.Runtime.CompilerServices;
+using Microsoft.Identity.Client.Requests.WsTrust;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// TODO: get the proper public keys in place from test signing.
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.TestInfrastructure")]
-[assembly: InternalsVisibleTo("Microsoft.Identity.Client.UnitTests")]
+namespace Microsoft.Identity.Client.UnitTests.Requests.WsTrust
+{
+    [TestClass]
+    public class SamlTokenInfoTests
+    {
+        [TestMethod]
+        public void TestConstructorV1()
+        {
+            var samlTokenInfo = new SamlTokenInfo(SamlAssertionType.SamlV1, "the_assertion");
+            Assert.AreEqual(SamlAssertionType.SamlV1, samlTokenInfo.AssertionType);
+            Assert.AreEqual("the_assertion", samlTokenInfo.Assertion);
+        }
+
+        [TestMethod]
+        public void TestConstructorV2()
+        {
+            var samlTokenInfo = new SamlTokenInfo(SamlAssertionType.SamlV2, "an_assertion");
+            Assert.AreEqual(SamlAssertionType.SamlV2, samlTokenInfo.AssertionType);
+            Assert.AreEqual("an_assertion", samlTokenInfo.Assertion);
+        }
+    }
+}
